@@ -1,2414 +1,1857 @@
-<!doctype html>
-<html lang="ru">
+<!DOCTYPE html>
+<html lang="az">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="theme-color" content="#101820">
-  <title>AZ Terminal</title>
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      min-height: 100%;
-      background: #0b1017;
-      color: #ffffff;
-      font-family: Arial, Helvetica, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -webkit-text-size-adjust: 100%;
-      touch-action: manipulation;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    }
-
-    button, input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-      border: 0;
-      line-height: 1.15;
-      white-space: normal;
-      word-wrap: break-word;
-    }
-
-    .kiosk {
-      min-height: 100vh;
-      padding: 14px;
-      background: linear-gradient(135deg, #111827 0%, #0b1017 55%, #18202a 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .shell {
-      width: 100%;
-      max-width: 1120px;
-      height: -webkit-calc(100vh - 28px);
-      height: calc(100vh - 28px);
-      min-height: 640px;
-      max-height: 860px;
-      border: 12px solid #202b38;
-      border-radius: 24px;
-      overflow: hidden;
-      background: #111923;
-      box-shadow: 0 24px 70px rgba(0, 0, 0, .42), inset 0 0 0 2px rgba(255, 255, 255, .06);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .topbar {
-      min-height: 78px;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(180deg, #1f2d3b 0%, #14202c 100%);
-      border-bottom: 1px solid rgba(255, 255, 255, .08);
-      gap: 12px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      min-width: 230px;
-      gap: 12px;
-    }
-
-    .brand-mark {
-      width: 48px;
-      height: 48px;
-      border-radius: 10px;
-      background: linear-gradient(145deg, #00a3ff 0%, #18c67a 100%);
-      color: #ffffff;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      letter-spacing: .5px;
-      box-shadow: inset 0 -7px 14px rgba(0, 0, 0, .16);
-    }
-
-    .brand-title {
-      margin: 0;
-      font-size: 19px;
-      line-height: 1.1;
-      font-weight: 800;
-      letter-spacing: 0;
-    }
-
-    .brand-subtitle {
-      margin-top: 3px;
-      color: #a9bacb;
-      font-size: 12px;
-      letter-spacing: .5px;
-      text-transform: uppercase;
-    }
-
-    .clock {
-      color: #dce7f2;
-      font-size: 15px;
-      font-weight: 700;
-      white-space: nowrap;
-      text-align: center;
-      min-width: 150px;
-    }
-
-    .langbar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .langbar button,
-    .top-action {
-      min-width: 52px;
-      min-height: 44px;
-      padding: 0 12px;
-      border-radius: 8px;
-      background: #2b3a49;
-      color: #ffffff;
-      font-weight: 800;
-      box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .2);
-    }
-
-    .langbar button.active {
-      background: #ffffff;
-      color: #152232;
-    }
-
-    .main {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      background: #eef2f5;
-    }
-
-    .side {
-      width: 226px;
-      padding: 14px;
-      background: #182333;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .side button {
-      min-height: 58px;
-      padding: 11px 12px;
-      border-radius: 8px;
-      text-align: left;
-      color: #dfe9f4;
-      background: #233246;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .18);
-    }
-
-    .side button.active,
-    .side button:active {
-      background: #0f9f7a;
-      color: #ffffff;
-    }
-
-    .side .quick {
-      margin-top: auto;
-      background: #cc2633;
-    }
-
-    .side-code {
-      width: 42px;
-      height: 34px;
-      border-radius: 7px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, .12);
-      font-size: 12px;
-      font-weight: 900;
-      flex: 0 0 auto;
-    }
-
-    .content {
-      flex: 1;
-      min-width: 0;
-      color: #172335;
-      background: #f4f7fa;
-      padding: 18px;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      position: relative;
-    }
-
-    .terminal-stage {
-      flex: 1;
-      min-width: 0;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      background: #f4f7fa;
-      position: relative;
-    }
-
-    .language-screen {
-      flex: 1;
-      background: #f4f7fa;
-      color: #142033;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 22px;
-    }
-
-    .hero-panel {
-      width: 100%;
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 22px;
-      border-radius: 10px;
-      background: #ffffff;
-      box-shadow: 0 12px 34px rgba(27, 44, 63, .12);
-      border: 1px solid #dde7ef;
-    }
-
-    .hero-title {
-      margin: 0 0 8px;
-      font-size: 34px;
-      line-height: 1.05;
-      color: #102033;
-      letter-spacing: 0;
-    }
-
-    .hero-note {
-      margin: 0;
-      color: #5e6d7c;
-      font-size: 17px;
-      line-height: 1.45;
-    }
-
-    .language-grid,
-    .tiles,
-    .provider-list,
-    .amount-presets,
-    .cash-grid,
-    .receipt-actions,
-    .history-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .language-grid button {
-      flex: 1 1 180px;
-      min-height: 96px;
-      border-radius: 10px;
-      color: #ffffff;
-      background: #1079c8;
-      text-align: left;
-      padding: 18px;
-      font-size: 22px;
-      font-weight: 900;
-      box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .13);
-    }
-
-    .language-grid button:nth-child(2) {
-      background: #13a173;
-    }
-
-    .language-grid button:nth-child(3) {
-      background: #d52b3a;
-    }
-
-    .screen-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-
-    .corner-back {
-      position: absolute;
-      left: 16px;
-      bottom: 16px;
-      z-index: 20;
-      min-height: 58px;
-      min-width: 166px;
-      padding: 0 20px;
-      border-radius: 8px;
-      background: #0f9f7a;
-      color: #ffffff;
-      font-size: 19px;
-      font-weight: 900;
-      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .2), 0 8px 18px rgba(15, 159, 122, .22);
-    }
-
-    .corner-back span {
-      font-size: 24px;
-      vertical-align: -1px;
-    }
-
-    .screen-title {
-      margin: 0;
-      color: #102033;
-      font-size: 30px;
-      line-height: 1.1;
-      letter-spacing: 0;
-    }
-
-    .screen-kicker {
-      margin: 4px 0 0;
-      color: #647383;
-      line-height: 1.35;
-      font-size: 15px;
-    }
-
-    .status-pill {
-      color: #ffffff;
-      background: #14324d;
-      border-radius: 999px;
-      padding: 9px 12px;
-      font-size: 13px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .tile,
-    .provider,
-    .amount-btn,
-    .cash-btn,
-    .action-btn,
-    .history-item {
-      border-radius: 8px;
-      background: #ffffff;
-      color: #152335;
-      border: 1px solid #dae5ee;
-      box-shadow: 0 4px 10px rgba(26, 42, 62, .08);
-    }
-
-    .tile {
-      flex: 1 1 190px;
-      min-height: 132px;
-      padding: 16px;
-      text-align: left;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .tile:active,
-    .provider:active,
-    .amount-btn:active,
-    .cash-btn:active,
-    .action-btn:active,
-    .key:active {
-      transform: translateY(1px);
-    }
-
-    .tile-code {
-      width: 62px;
-      height: 42px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      background: #1079c8;
-      font-size: 13px;
-      font-weight: 900;
-    }
-
-    .tile:nth-child(2n) .tile-code {
-      background: #0fa071;
-    }
-
-    .tile:nth-child(3n) .tile-code {
-      background: #cc2633;
-    }
-
-    .tile h3,
-    .provider h3 {
-      margin: 0;
-      font-size: 19px;
-      line-height: 1.18;
-      letter-spacing: 0;
-    }
-
-    .tile p,
-    .provider p,
-    .small-muted {
-      margin: 4px 0 0;
-      color: #667789;
-      line-height: 1.32;
-      font-size: 14px;
-    }
-
-    .provider {
-      flex: 1 1 220px;
-      min-height: 106px;
-      padding: 15px;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .provider-logo {
-      width: 58px;
-      height: 58px;
-      border-radius: 10px;
-      background: #e9f1f8;
-      color: #142033;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      flex: 0 0 auto;
-      border: 1px solid #d7e3ed;
-    }
-
-    .form-layout {
-      display: flex;
-      align-items: stretch;
-      gap: 18px;
-    }
-
-    .panel {
-      background: #ffffff;
-      border: 1px solid #dae5ee;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(26, 42, 62, .08);
-      padding: 16px;
-    }
-
-    .entry-panel {
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-
-    .keypad-panel {
-      flex: 0 0 302px;
-    }
-
-    .display-field {
-      min-height: 74px;
-      border-radius: 8px;
-      background: #edf3f8;
-      border: 2px solid #d4e2ed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px;
-      margin: 14px 0;
-      color: #102033;
-      font-size: 28px;
-      font-weight: 900;
-      word-break: break-word;
-      text-align: center;
-    }
-
-    .display-field.empty {
-      color: #8a98a7;
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .keypad {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .key {
-      width: 31.4%;
-      min-height: 62px;
-      border-radius: 8px;
-      background: #243346;
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: 900;
-      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2);
-    }
-
-    .key.utility {
-      background: #536273;
-      font-size: 15px;
-    }
-
-    .amount-presets {
-      margin: 14px 0;
-    }
-
-    .amount-btn {
-      flex: 1 1 120px;
-      min-height: 64px;
-      font-size: 20px;
-      font-weight: 900;
-      color: #102033;
-      background: #ffffff;
-    }
-
-    .summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 14px 0;
-    }
-
-    .summary-card {
-      flex: 1 1 150px;
-      min-height: 82px;
-      padding: 13px;
-      background: #edf3f8;
-      border: 1px solid #d7e3ed;
-      border-radius: 8px;
-    }
-
-    .summary-card span {
-      display: block;
-      color: #667789;
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 5px;
-    }
-
-    .summary-card strong {
-      color: #102033;
-      font-size: 20px;
-      line-height: 1.1;
-      word-break: break-word;
-    }
-
-    .cashbox {
-      display: flex;
-      gap: 18px;
-      align-items: stretch;
-    }
-
-    .cash-left {
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-
-    .cash-right {
-      flex: 0 0 290px;
-    }
-
-    .cash-slot {
-      height: 92px;
-      border-radius: 14px;
-      background: #1c2634;
-      margin: 8px 0 16px;
-      border: 8px solid #303c4c;
-      box-shadow: inset 0 0 0 4px #0b1017, inset 0 -20px 30px rgba(0, 0, 0, .45);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #bed0e0;
-      font-weight: 900;
-      letter-spacing: .8px;
-      text-transform: uppercase;
-    }
-
-    .cash-btn {
-      flex: 1 1 86px;
-      min-height: 58px;
-      background: #ffffff;
-      color: #102033;
-      font-size: 20px;
-      font-weight: 900;
-    }
-
-    .cash-btn.primary {
-      background: #0fa071;
-      color: #ffffff;
-      border-color: #0fa071;
-    }
-
-    .notice {
-      padding: 12px 14px;
-      border-radius: 8px;
-      background: #fff7da;
-      border: 1px solid #efd889;
-      color: #58451a;
-      font-weight: 700;
-      line-height: 1.35;
-      margin: 12px 0;
-    }
-
-    .notice.good {
-      background: #e9f8f1;
-      border-color: #bce6d3;
-      color: #14583e;
-    }
-
-    .notice.bad {
-      background: #ffecee;
-      border-color: #efb6be;
-      color: #7e1e29;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .action-btn {
-      min-height: 56px;
-      padding: 0 18px;
-      color: #ffffff;
-      background: #1079c8;
-      border-color: #1079c8;
-      font-weight: 900;
-      font-size: 16px;
-      min-width: 136px;
-    }
-
-    .action-btn.secondary {
-      color: #142033;
-      background: #ffffff;
-      border-color: #dae5ee;
-    }
-
-    .action-btn.danger {
-      background: #cc2633;
-      border-color: #cc2633;
-    }
-
-    .action-btn.success {
-      background: #0fa071;
-      border-color: #0fa071;
-    }
-
-    .action-btn[disabled],
-    .action-btn.disabled {
-      background: #acb8c4;
-      border-color: #acb8c4;
-      color: #f4f7fa;
-      cursor: default;
-      transform: none;
-    }
-
-    .progress {
-      height: 16px;
-      border-radius: 999px;
-      background: #dce7ef;
-      overflow: hidden;
-      margin: 20px 0;
-    }
-
-    .progress span {
-      display: block;
-      height: 100%;
-      width: 72%;
-      background: linear-gradient(90deg, #1079c8, #0fa071);
-      border-radius: 999px;
-      -webkit-animation: progressMove 1.1s ease-in-out infinite alternate;
-      animation: progressMove 1.1s ease-in-out infinite alternate;
-    }
-
-    @-webkit-keyframes progressMove {
-      from { width: 38%; }
-      to { width: 92%; }
-    }
-
-    @keyframes progressMove {
-      from { width: 38%; }
-      to { width: 92%; }
-    }
-
-    .receipt {
-      max-width: 520px;
-      margin: 0 auto;
-      background: #ffffff;
-      border: 1px solid #d9e5ee;
-      border-radius: 10px;
-      padding: 18px;
-      color: #102033;
-      box-shadow: 0 10px 28px rgba(26, 42, 62, .12);
-    }
-
-    .receipt h2 {
-      margin: 0 0 10px;
-      font-size: 24px;
-      letter-spacing: 0;
-    }
-
-    .receipt-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      border-top: 1px dashed #cad7e2;
-      padding: 10px 0;
-      color: #425263;
-      line-height: 1.3;
-    }
-
-    .receipt-row strong {
-      color: #102033;
-      text-align: right;
-      max-width: 62%;
-      word-break: break-word;
-    }
-
-    .receipt-ok {
-      margin-top: 10px;
-      padding: 12px;
-      border-radius: 8px;
-      background: #e9f8f1;
-      color: #14583e;
-      font-weight: 900;
-      text-align: center;
-    }
-
-    .history-item {
-      flex: 1 1 260px;
-      min-height: 116px;
-      padding: 14px;
-      text-align: left;
-    }
-
-    .history-item h3 {
-      margin: 0 0 8px;
-      font-size: 17px;
-      line-height: 1.2;
-    }
-
-    .help-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .help-grid .panel {
-      flex: 1 1 240px;
-    }
-
-    .help-grid h3 {
-      margin: 0 0 8px;
-      font-size: 19px;
-    }
-
-    .help-grid p {
-      margin: 0;
-      color: #5f6f80;
-      line-height: 1.45;
-    }
-
-    /* iOS 8 Safari has no flex gap support, so spacing is margin-based. */
-    .kiosk,
-    .shell,
-    .topbar,
-    .brand,
-    .brand-mark,
-    .langbar,
-    .main,
-    .side,
-    .side button,
-    .side-code,
-    .terminal-stage,
-    .language-screen,
-    .language-grid,
-    .screen-head,
-    .tiles,
-    .tile,
-    .tile-code,
-    .provider-list,
-    .provider,
-    .provider-logo,
-    .form-layout,
-    .display-field,
-    .keypad,
-    .amount-presets,
-    .summary,
-    .cashbox,
-    .cash-grid,
-    .cash-slot,
-    .actions,
-    .receipt-row,
-    .history-list,
-    .help-grid,
-    .help-grid {
-      display: -webkit-flex;
-      display: flex;
-    }
-
-    .shell,
-    .side,
-    .terminal-stage,
-    .language-screen,
-    .tile {
-      -webkit-flex-direction: column;
-      flex-direction: column;
-    }
-
-    .langbar,
-    .language-grid,
-    .tiles,
-    .provider-list,
-    .keypad,
-    .amount-presets,
-    .summary,
-    .cash-grid,
-    .actions,
-    .history-list,
-    .help-grid {
-      -webkit-flex-wrap: wrap;
-      flex-wrap: wrap;
-    }
-
-    .kiosk,
-    .brand,
-    .side button,
-    .side-code,
-    .display-field,
-    .provider,
-    .provider-logo,
-    .tile-code,
-    .cash-slot {
-      -webkit-align-items: center;
-      align-items: center;
-    }
-
-    .kiosk,
-    .brand-mark,
-    .side-code,
-    .display-field,
-    .provider-logo,
-    .tile-code,
-    .cash-slot {
-      -webkit-justify-content: center;
-      justify-content: center;
-    }
-
-    .topbar,
-    .side button,
-    .screen-head,
-    .tile,
-    .receipt-row {
-      -webkit-justify-content: space-between;
-      justify-content: space-between;
-    }
-
-    .langbar {
-      -webkit-justify-content: flex-end;
-      justify-content: flex-end;
-    }
-
-    .shell,
-    .main,
-    .content,
-    .terminal-stage,
-    .language-screen,
-    .entry-panel,
-    .cash-left {
-      -webkit-flex: 1 1 auto;
-      flex: 1 1 auto;
-    }
-
-    .keypad-panel {
-      -webkit-flex: 0 0 302px;
-      flex: 0 0 302px;
-    }
-
-    .cash-right {
-      -webkit-flex: 0 0 290px;
-      flex: 0 0 290px;
-    }
-
-    .topbar,
-    .brand,
-    .langbar,
-    .side,
-    .side button,
-    .language-screen,
-    .language-grid,
-    .screen-head,
-    .tiles,
-    .tile,
-    .provider-list,
-    .provider,
-    .form-layout,
-    .keypad,
-    .summary,
-    .cashbox,
-    .cash-grid,
-    .actions,
-    .receipt-row,
-    .history-list,
-    .help-grid {
-      gap: 0;
-    }
-
-    .topbar > *,
-    .brand > *,
-    .langbar > *,
-    .screen-head > *,
-    .form-layout > *,
-    .cashbox > *,
-    .receipt-row > * {
-      margin-left: 6px;
-      margin-right: 6px;
-    }
-
-    .topbar > *:first-child,
-    .brand > *:first-child,
-    .langbar > *:first-child,
-    .screen-head > *:first-child,
-    .form-layout > *:first-child,
-    .cashbox > *:first-child,
-    .receipt-row > *:first-child {
-      margin-left: 0;
-    }
-
-    .topbar > *:last-child,
-    .brand > *:last-child,
-    .langbar > *:last-child,
-    .screen-head > *:last-child,
-    .form-layout > *:last-child,
-    .cashbox > *:last-child,
-    .receipt-row > *:last-child {
-      margin-right: 0;
-    }
-
-    .language-grid,
-    .tiles,
-    .provider-list,
-    .keypad,
-    .amount-presets,
-    .summary,
-    .cash-grid,
-    .actions,
-    .history-list,
-    .help-grid {
-      margin-left: -6px;
-      margin-right: -6px;
-    }
-
-    .language-grid > *,
-    .tiles > *,
-    .provider-list > *,
-    .keypad > *,
-    .amount-presets > *,
-    .summary > *,
-    .cash-grid > *,
-    .actions > *,
-    .history-list > *,
-    .help-grid > * {
-      margin: 6px;
-    }
-
-    .side button {
-      margin-bottom: 10px;
-    }
-
-    .side button:last-child {
-      margin-bottom: 0;
-    }
-
-    @media (max-height: 760px) and (min-width: 821px) {
-      .kiosk {
-        padding: 0;
-      }
-
-      .shell {
-        height: 100vh;
-        min-height: 0;
-        max-height: none;
-        border-width: 8px;
-        border-radius: 14px;
-      }
-
-      .topbar {
-        min-height: 64px;
-        padding-top: 8px;
-        padding-bottom: 8px;
-      }
-
-      .content {
-        padding: 14px;
-      }
-
-      .screen-title {
-        font-size: 26px;
-      }
-
-      .tile {
-        min-height: 112px;
-      }
-
-    }
-
-    @media (max-width: 820px) {
-      .kiosk {
-        padding: 0;
-      }
-
-      .shell {
-        height: 100vh;
-        min-height: 100vh;
-        max-height: none;
-        border: 0;
-        border-radius: 0;
-      }
-
-      .topbar {
-        min-height: 68px;
-        padding: 10px;
-      }
-
-      .brand {
-        min-width: 0;
-      }
-
-      .brand-mark {
-        width: 42px;
-        height: 42px;
-      }
-
-      .brand-title {
-        font-size: 16px;
-      }
-
-      .brand-subtitle,
-      .clock {
-        display: none;
-      }
-
-      .main,
-      .form-layout,
-      .cashbox {
-        -webkit-flex-direction: column;
-        flex-direction: column;
-      }
-
-      .side {
-        width: 100%;
-        -webkit-flex-direction: row;
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 10px;
-      }
-
-      .side button {
-        min-width: 148px;
-        margin-right: 8px;
-        margin-bottom: 0;
-      }
-
-      .side .quick {
-        margin-top: 0;
-      }
-
-      .terminal-stage {
-        min-height: 0;
-      }
-
-      .content,
-      .language-screen {
-        padding: 12px;
-      }
-
-      .screen-title {
-        font-size: 24px;
-      }
-
-      .hero-title {
-        font-size: 28px;
-      }
-
-      .keypad-panel,
-      .cash-right {
-        flex-basis: auto;
-      }
-
-      .display-field {
-        font-size: 23px;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .topbar {
-        -webkit-flex-wrap: wrap;
-        flex-wrap: wrap;
-      }
-
-      .brand {
-        width: 100%;
-        margin-bottom: 6px;
-      }
-
-      .langbar {
-        width: 100%;
-        -webkit-justify-content: space-between;
-        justify-content: space-between;
-      }
-
-      .langbar button,
-      .top-action {
-        min-width: 48px;
-        min-height: 40px;
-        padding-left: 9px;
-        padding-right: 9px;
-        font-size: 14px;
-      }
-
-      .side button {
-        min-width: 118px;
-        min-height: 52px;
-        font-size: 14px;
-      }
-
-      .side-code {
-        width: 34px;
-        height: 28px;
-        font-size: 10px;
-      }
-
-      .hero-title,
-      .screen-title {
-        font-size: 22px;
-      }
-
-      .tile,
-      .provider,
-      .summary-card,
-      .history-item,
-      .help-grid .panel {
-        -webkit-flex: 1 1 100%;
-        flex: 1 1 100%;
-      }
-
-      .tile {
-        min-height: 112px;
-      }
-
-      .key {
-        min-height: 56px;
-      }
-
-      .action-btn {
-        width: 100%;
-      }
-
-      .receipt-row {
-        -webkit-flex-direction: column;
-        flex-direction: column;
-      }
-
-      .receipt-row strong {
-        max-width: 100%;
-        text-align: left;
-      }
-
-    }
-
-    @media print {
-      body {
-        background: #ffffff;
-      }
-      .topbar,
-      .side,
-      .actions,
-      .screen-head,
-      .content:after {
-        display: none;
-      }
-      .kiosk,
-      .shell,
-      .main,
-      .content {
-        display: block;
-        min-height: 0;
-        border: 0;
-        box-shadow: none;
-        padding: 0;
-        background: #ffffff;
-      }
-      .receipt {
-        box-shadow: none;
-        border: 1px solid #000000;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Bank Terminali / Банковский Терминал / Bank Terminal</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0f; font-family: 'Arial', sans-serif; touch-action: none; -webkit-text-size-adjust: 100%; }
+
+  /* ===== VARIABLES ===== */
+  :root {
+    --blue: #003b7a;
+    --blue2: #0052a5;
+    --blue3: #0069d9;
+    --gold: #d4a017;
+    --gold2: #f0c040;
+    --green: #00a550;
+    --green2: #00c060;
+    --red: #c0001a;
+    --red2: #e8001e;
+    --bg-dark: #07101f;
+    --bg-mid: #0d1a2e;
+    --text-white: #ffffff;
+    --text-light: #cce0ff;
+    --text-gray: #8899bb;
+    --border: #1a3055;
+    --shadow: 0 4px 24px rgba(0,80,200,0.18);
+    --radius: 14px;
+    --radius-sm: 8px;
+    --transition: 0.18s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ===== TERMINAL FRAME ===== */
+  #terminal-frame {
+    position: fixed; inset: 0;
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    background: linear-gradient(160deg, #07101f 0%, #0d1a2e 60%, #071020 100%);
+    overflow: hidden;
+  }
+
+  /* ===== TOP HEADER BAR ===== */
+  #top-bar {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: space-between; justify-content: space-between;
+    background: linear-gradient(90deg, #002060 0%, #003b7a 50%, #002060 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 0 20px;
+    height: 64px;
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  #top-bar::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 41px);
+    pointer-events: none;
+  }
+  #top-bar .logo-area {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    gap: 10px;
+  }
+  #top-bar .bank-logo {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
+    border-radius: 50%;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+    font-size: 20px; font-weight: 900;
+    color: #002060;
+    box-shadow: 0 0 16px rgba(212,160,23,0.5);
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+  }
+  #top-bar .bank-name {
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+  }
+  #top-bar .bank-title { color: var(--gold2); font-size: 15px; font-weight: 700; letter-spacing: 1px; line-height: 1; }
+  #top-bar .bank-sub { color: var(--text-light); font-size: 10px; letter-spacing: 2px; opacity: 0.8; }
+
+  #top-bar .center-info {
+    position: absolute; left: 50%; top: 50%;
+    -webkit-transform: translate(-50%,-50%); transform: translate(-50%,-50%);
+    text-align: center;
+  }
+  #top-bar .terminal-id { color: var(--text-gray); font-size: 10px; letter-spacing: 1px; }
+  #top-bar .terminal-num { color: var(--text-light); font-size: 11px; font-weight: 700; }
+
+  #top-bar .right-info {
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-align-items: flex-end; align-items: flex-end;
+    gap: 2px;
+  }
+  #clock { color: var(--gold2); font-size: 16px; font-weight: 700; font-family: 'Courier New', monospace; }
+  #date-display { color: var(--text-light); font-size: 10px; }
+  .lang-switcher {
+    display: -webkit-flex; display: flex;
+    gap: 3px; margin-top: 2px;
+  }
+  .lang-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text-light);
+    font-size: 9px; font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lang-btn.active { background: var(--gold); color: #002060; border-color: var(--gold); }
+  .lang-btn:active { -webkit-transform: scale(0.92); transform: scale(0.92); }
+
+  /* ===== STATUS BAR ===== */
+  #status-bar {
+    background: rgba(0,30,70,0.7);
+    border-bottom: 1px solid var(--border);
+    padding: 5px 20px;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: space-between; justify-content: space-between;
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+  }
+  .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green2); margin-right: 5px; box-shadow: 0 0 6px var(--green2); animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .status-text { color: var(--text-light); font-size: 11px; }
+  .network-info { color: var(--text-gray); font-size: 10px; }
+
+  /* ===== MAIN CONTENT AREA ===== */
+  #main-area {
+    -webkit-flex: 1; flex: 1;
+    display: -webkit-flex; display: flex;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen {
+    position: absolute; inset: 0;
+    display: none;
+    -webkit-flex-direction: column; flex-direction: column;
+    overflow: hidden;
+  }
+  .screen.active {
+    display: -webkit-flex; display: flex;
+  }
+
+  /* ===== WELCOME SCREEN ===== */
+  #screen-welcome {
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+    background: linear-gradient(160deg, #07101f 0%, #0d1a2e 100%);
+  }
+  .welcome-inner {
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-align-items: center; align-items: center;
+    gap: 28px;
+    padding: 20px;
+    width: 100%; max-width: 480px;
+  }
+  .welcome-logo-big {
+    width: 100px; height: 100px;
+    background: linear-gradient(135deg, #002060, #003b7a);
+    border-radius: 50%;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+    font-size: 48px; font-weight: 900;
+    color: var(--gold2);
+    box-shadow: 0 0 40px rgba(212,160,23,0.3), 0 0 80px rgba(0,80,200,0.2);
+    border: 3px solid var(--gold);
+    animation: pulse-logo 3s infinite;
+  }
+  @keyframes pulse-logo { 0%,100%{box-shadow:0 0 40px rgba(212,160,23,0.3),0 0 80px rgba(0,80,200,0.2)} 50%{box-shadow:0 0 60px rgba(212,160,23,0.5),0 0 100px rgba(0,80,200,0.35)} }
+  .welcome-title { color: var(--text-white); font-size: 22px; font-weight: 700; text-align: center; letter-spacing: 1px; }
+  .welcome-subtitle { color: var(--text-light); font-size: 13px; text-align: center; opacity: 0.8; }
+  .welcome-touch-hint {
+    background: linear-gradient(90deg, var(--blue), var(--blue3));
+    color: white;
+    padding: 16px 40px;
+    border-radius: 40px;
+    font-size: 15px; font-weight: 700;
+    letter-spacing: 1px;
+    border: none; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,100,220,0.4);
+    animation: touch-pulse 2s infinite;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .welcome-touch-hint:active { -webkit-transform: scale(0.95); transform: scale(0.95); }
+  @keyframes touch-pulse { 0%,100%{box-shadow:0 4px 20px rgba(0,100,220,0.4)} 50%{box-shadow:0 4px 32px rgba(0,100,220,0.7)} }
+  .welcome-secure {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    gap: 6px;
+    color: var(--text-gray); font-size: 11px;
+  }
+  .lock-icon { font-size: 13px; }
+
+  /* ===== MENU SCREEN ===== */
+  #screen-menu { background: var(--bg-dark); }
+  .screen-header {
+    background: linear-gradient(90deg, #001840, #002b60);
+    padding: 14px 20px;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: space-between; justify-content: space-between;
+    border-bottom: 2px solid var(--gold);
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+  }
+  .screen-title { color: var(--gold2); font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+  .back-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text-light);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px; cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .back-btn:active { background: rgba(255,255,255,0.18); -webkit-transform: scale(0.95); transform: scale(0.95); }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .menu-card {
+    background: linear-gradient(145deg, #0d1a2e, #0a1525);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 14px;
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-align-items: center; align-items: center;
+    gap: 10px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .menu-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0;
+    -webkit-transition: var(--transition); transition: var(--transition);
+  }
+  .menu-card:active { -webkit-transform: scale(0.96); transform: scale(0.96); border-color: var(--blue3); background: linear-gradient(145deg, #0f2040, #0d1835); }
+  .menu-card:active::before { opacity: 1; }
+  .menu-icon { font-size: 32px; line-height: 1; }
+  .menu-label { color: var(--text-white); font-size: 13px; font-weight: 600; line-height: 1.3; }
+  .menu-desc { color: var(--text-gray); font-size: 10px; }
+  .menu-card.highlight { border-color: var(--gold); }
+  .menu-card.highlight .menu-icon { filter: drop-shadow(0 0 8px rgba(212,160,23,0.6)); }
+
+  /* ===== PAYMENT SCREEN ===== */
+  #screen-payment, #screen-transfer, #screen-deposit, #screen-balance, #screen-history, #screen-mobile, #screen-utility, #screen-success, #screen-pin { background: var(--bg-dark); }
+
+  .payment-body {
+    -webkit-flex: 1; flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ===== FORM ELEMENTS ===== */
+  .form-section {
+    background: linear-gradient(145deg, #0d1a2e, #0a1525);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .form-section-title { color: var(--gold2); font-size: 12px; font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
+  .form-row { margin-bottom: 12px; }
+  .form-label { color: var(--text-light); font-size: 11px; margin-bottom: 5px; display: block; }
+  .form-input {
+    width: 100%;
+    background: rgba(0,20,50,0.8);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-white);
+    font-size: 15px;
+    padding: 10px 13px;
+    outline: none;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    -webkit-appearance: none; appearance: none;
+    font-family: 'Courier New', monospace;
+  }
+  .form-input:focus { border-color: var(--blue3); background: rgba(0,30,70,0.9); }
+  .form-select {
+    width: 100%;
+    background: rgba(0,20,50,0.8);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-white);
+    font-size: 14px;
+    padding: 10px 13px;
+    outline: none;
+    -webkit-appearance: none; appearance: none;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    cursor: pointer;
+  }
+  .form-select:focus { border-color: var(--blue3); }
+
+  /* ===== NUMPAD ===== */
+  .numpad-area {
+    background: linear-gradient(145deg, #0a1525, #07101f);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .amount-display {
+    background: rgba(0,10,30,0.9);
+    border: 2px solid var(--blue3);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: space-between; justify-content: space-between;
+  }
+  .amount-label { color: var(--text-gray); font-size: 11px; }
+  .amount-value { color: var(--gold2); font-size: 24px; font-weight: 700; font-family: 'Courier New', monospace; }
+  .amount-currency { color: var(--text-light); font-size: 13px; }
+  .numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .numpad-btn {
+    background: linear-gradient(145deg, #0f2040, #0d1835);
+    border: 1px solid var(--border);
+    color: var(--text-white);
+    font-size: 20px; font-weight: 600;
+    padding: 14px 5px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
+  }
+  .numpad-btn:active { background: linear-gradient(145deg, #1a3a70, #152d58); -webkit-transform: scale(0.93); transform: scale(0.93); border-color: var(--blue3); }
+  .numpad-btn.clear { color: var(--red2); border-color: var(--red); }
+  .numpad-btn.clear:active { background: linear-gradient(145deg, #3a0010, #2e000d); }
+  .numpad-btn.ok { background: linear-gradient(145deg, #004020, #003018); color: var(--green2); border-color: var(--green); font-size: 14px; }
+  .numpad-btn.ok:active { background: linear-gradient(145deg, #006030, #004020); }
+
+  /* ===== ACTION BUTTONS ===== */
+  .action-row {
+    display: -webkit-flex; display: flex;
+    gap: 10px;
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+    padding: 0 16px 16px;
+  }
+  .btn-primary {
+    -webkit-flex: 1; flex: 1;
+    background: linear-gradient(135deg, var(--blue2), var(--blue3));
+    border: none;
+    color: white;
+    font-size: 14px; font-weight: 700;
+    padding: 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    letter-spacing: 0.5px;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 16px rgba(0,100,220,0.3);
+  }
+  .btn-primary:active { -webkit-transform: scale(0.96); transform: scale(0.96); box-shadow: none; }
+  .btn-success {
+    -webkit-flex: 1; flex: 1;
+    background: linear-gradient(135deg, var(--green), var(--green2));
+    border: none;
+    color: white;
+    font-size: 14px; font-weight: 700;
+    padding: 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 16px rgba(0,160,80,0.3);
+  }
+  .btn-success:active { -webkit-transform: scale(0.96); transform: scale(0.96); }
+  .btn-danger {
+    -webkit-flex: 1; flex: 1;
+    background: linear-gradient(135deg, var(--red), var(--red2));
+    border: none;
+    color: white;
+    font-size: 14px; font-weight: 700;
+    padding: 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-danger:active { -webkit-transform: scale(0.96); transform: scale(0.96); }
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-light);
+    font-size: 14px;
+    padding: 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-outline:active { background: rgba(255,255,255,0.05); -webkit-transform: scale(0.96); transform: scale(0.96); }
+
+  /* ===== BALANCE SCREEN ===== */
+  .balance-card {
+    background: linear-gradient(135deg, #001840, #003070);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-card::after {
+    content: '🏦';
+    position: absolute; right: 16px; top: 16px;
+    font-size: 40px; opacity: 0.15;
+  }
+  .balance-card-name { color: var(--text-light); font-size: 12px; letter-spacing: 1px; margin-bottom: 8px; }
+  .balance-amount-big { color: var(--gold2); font-size: 36px; font-weight: 700; font-family: 'Courier New', monospace; margin-bottom: 4px; }
+  .balance-currency-big { color: var(--text-light); font-size: 14px; }
+  .balance-iban { color: var(--text-gray); font-size: 11px; font-family: 'Courier New', monospace; margin-top: 12px; letter-spacing: 1px; }
+
+  .balance-details {
+    background: linear-gradient(145deg, #0d1a2e, #0a1525);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .balance-row {
+    display: -webkit-flex; display: flex;
+    -webkit-justify-content: space-between; justify-content: space-between;
+    -webkit-align-items: center; align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .balance-row:last-child { border-bottom: none; }
+  .balance-row-label { color: var(--text-gray); font-size: 12px; }
+  .balance-row-val { color: var(--text-white); font-size: 13px; font-weight: 600; font-family: 'Courier New', monospace; }
+  .balance-row-val.positive { color: var(--green2); }
+  .balance-row-val.negative { color: var(--red2); }
+
+  /* ===== HISTORY SCREEN ===== */
+  .history-list {
+    -webkit-flex: 1; flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px;
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    gap: 8px;
+  }
+  .history-item {
+    background: linear-gradient(145deg, #0d1a2e, #0a1525);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    gap: 12px;
+  }
+  .history-icon { font-size: 22px; -webkit-flex-shrink: 0; flex-shrink: 0; }
+  .history-info { -webkit-flex: 1; flex: 1; min-width: 0; }
+  .history-title { color: var(--text-white); font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-date { color: var(--text-gray); font-size: 10px; margin-top: 2px; }
+  .history-amount { font-family: 'Courier New', monospace; font-size: 14px; font-weight: 700; -webkit-flex-shrink: 0; flex-shrink: 0; }
+  .history-amount.in { color: var(--green2); }
+  .history-amount.out { color: var(--red2); }
+
+  /* ===== SUCCESS SCREEN ===== */
+  #screen-success {
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+  }
+  .success-inner {
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-align-items: center; align-items: center;
+    gap: 20px;
+    padding: 30px 20px;
+    width: 100%; max-width: 400px;
+  }
+  .success-icon {
+    width: 90px; height: 90px;
+    background: linear-gradient(135deg, var(--green), var(--green2));
+    border-radius: 50%;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+    font-size: 44px;
+    box-shadow: 0 0 40px rgba(0,192,96,0.4);
+    animation: success-pop 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes success-pop { from{-webkit-transform:scale(0);transform:scale(0)} to{-webkit-transform:scale(1);transform:scale(1)} }
+  .success-title { color: var(--green2); font-size: 22px; font-weight: 700; }
+  .success-msg { color: var(--text-light); font-size: 13px; text-align: center; }
+  .success-details {
+    background: linear-gradient(145deg, #0d1a2e, #0a1525);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px; width: 100%;
+  }
+  .success-detail-row {
+    display: -webkit-flex; display: flex;
+    -webkit-justify-content: space-between; justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .success-detail-row:last-child { border-bottom: none; }
+  .success-detail-label { color: var(--text-gray); font-size: 11px; }
+  .success-detail-val { color: var(--text-white); font-size: 12px; font-weight: 600; font-family: 'Courier New', monospace; }
+  .receipt-code { color: var(--gold2); font-size: 16px; font-weight: 700; font-family: 'Courier New', monospace; }
+
+  /* ===== PIN SCREEN ===== */
+  #screen-pin {
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+  }
+  .pin-inner {
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-align-items: center; align-items: center;
+    gap: 24px;
+    padding: 20px;
+    width: 100%; max-width: 380px;
+  }
+  .pin-title { color: var(--text-white); font-size: 18px; font-weight: 700; }
+  .pin-subtitle { color: var(--text-gray); font-size: 12px; text-align: center; }
+  .pin-dots {
+    display: -webkit-flex; display: flex;
+    gap: 14px;
+  }
+  .pin-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--blue3);
+    background: transparent;
+    -webkit-transition: var(--transition); transition: var(--transition);
+  }
+  .pin-dot.filled { background: var(--blue3); box-shadow: 0 0 10px var(--blue3); }
+  .pin-numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 72px);
+    gap: 10px;
+  }
+  .pin-btn {
+    width: 72px; height: 72px;
+    background: linear-gradient(145deg, #0f2040, #0d1835);
+    border: 1.5px solid var(--border);
+    color: var(--text-white);
+    font-size: 22px; font-weight: 700;
+    border-radius: 50%;
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
+  }
+  .pin-btn:active { background: linear-gradient(145deg, #1a3a70, #152d58); -webkit-transform: scale(0.9); transform: scale(0.9); border-color: var(--blue3); }
+  .pin-btn.clear { color: var(--red2); font-size: 16px; }
+  .pin-btn.enter { background: linear-gradient(145deg, #003b7a, #0069d9); color: white; font-size: 13px; font-weight: 700; border-color: var(--blue3); }
+  .pin-btn.enter:active { background: linear-gradient(145deg, #0052a5, #0085ff); }
+  .pin-error { color: var(--red2); font-size: 12px; text-align: center; display: none; }
+  .pin-error.show { display: block; animation: shake 0.4s; }
+  @keyframes shake { 0%,100%{-webkit-transform:translateX(0);transform:translateX(0)} 20%,60%{-webkit-transform:translateX(-8px);transform:translateX(-8px)} 40%,80%{-webkit-transform:translateX(8px);transform:translateX(8px)} }
+
+  /* ===== MOBILE TOPUP ===== */
+  .operator-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .operator-btn {
+    background: linear-gradient(145deg, #0d1a2e, #0a1525);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 6px;
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-align-items: center; align-items: center;
+    gap: 6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .operator-btn:active, .operator-btn.selected { border-color: var(--blue3); background: linear-gradient(145deg, #0f2040, #0d1835); }
+  .operator-emoji { font-size: 24px; }
+  .operator-name { color: var(--text-light); font-size: 11px; font-weight: 600; }
+
+  .quick-amounts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .quick-btn {
+    background: linear-gradient(145deg, #0d1a2e, #0a1525);
+    border: 1px solid var(--border);
+    color: var(--text-light);
+    padding: 10px 4px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px; font-weight: 600;
+    text-align: center;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'Courier New', monospace;
+  }
+  .quick-btn:active { background: linear-gradient(145deg, #0f2040, #0d1835); border-color: var(--blue3); color: var(--gold2); -webkit-transform: scale(0.95); transform: scale(0.95); }
+
+  /* ===== UTILITY GRID ===== */
+  .utility-list {
+    -webkit-flex: 1; flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px;
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    gap: 8px;
+  }
+  .utility-item {
+    background: linear-gradient(145deg, #0d1a2e, #0a1525);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    gap: 14px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .utility-item:active { background: linear-gradient(145deg, #0f2040, #0d1835); border-color: var(--blue3); -webkit-transform: scale(0.98); transform: scale(0.98); }
+  .utility-icon { font-size: 26px; -webkit-flex-shrink: 0; flex-shrink: 0; }
+  .utility-info { -webkit-flex: 1; flex: 1; }
+  .utility-name { color: var(--text-white); font-size: 13px; font-weight: 600; }
+  .utility-detail { color: var(--text-gray); font-size: 11px; margin-top: 2px; }
+  .utility-arrow { color: var(--text-gray); font-size: 16px; -webkit-flex-shrink: 0; flex-shrink: 0; }
+
+  /* ===== DEPOSIT SCREEN ===== */
+  .deposit-slots {
+    background: linear-gradient(145deg, #0a1525, #07101f);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-align-items: center; align-items: center;
+    gap: 14px;
+  }
+  .slot-visual {
+    width: 160px; height: 30px;
+    background: linear-gradient(90deg, #1a1a1a, #333, #1a1a1a);
+    border-radius: 4px;
+    border: 2px solid #555;
+    position: relative;
+    overflow: hidden;
+  }
+  .slot-visual::after {
+    content: '';
+    position: absolute; top: 50%; left: -100%; right: 100%;
+    height: 2px; background: var(--green2);
+    -webkit-transform: translateY(-50%); transform: translateY(-50%);
+  }
+  .slot-visual.active::after { animation: scan 1.5s linear infinite; }
+  @keyframes scan { to{left:100%;right:-100%} }
+  .slot-label { color: var(--text-light); font-size: 12px; }
+  .deposit-info { color: var(--text-gray); font-size: 11px; text-align: center; }
+
+  /* ===== BOTTOM NAV ===== */
+  #bottom-nav {
+    background: linear-gradient(90deg, #001840, #002b60);
+    border-top: 2px solid var(--gold);
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    padding: 0 10px;
+    height: 56px;
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+  }
+  #bottom-nav .nav-info { color: var(--text-gray); font-size: 10px; -webkit-flex: 1; flex: 1; }
+  .nav-chips { display: -webkit-flex; display: flex; gap: 6px; }
+  .nav-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    color: var(--text-gray);
+    font-size: 10px;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    gap: 4px;
+  }
+  .nav-chip .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green2); box-shadow: 0 0 4px var(--green2); }
+  .end-session-btn {
+    background: rgba(200,0,0,0.12);
+    border: 1px solid rgba(200,0,0,0.3);
+    color: var(--red2);
+    font-size: 11px; font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    -webkit-transition: var(--transition); transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .end-session-btn:active { background: rgba(200,0,0,0.25); -webkit-transform: scale(0.95); transform: scale(0.95); }
+
+  /* ===== LOADING OVERLAY ===== */
+  #loading-overlay {
+    position: fixed; inset: 0;
+    background: rgba(7,16,31,0.92);
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+    z-index: 1000;
+    opacity: 0; pointer-events: none;
+    -webkit-transition: opacity 0.2s; transition: opacity 0.2s;
+  }
+  #loading-overlay.show { opacity: 1; pointer-events: all; }
+  .spinner {
+    width: 50px; height: 50px;
+    border: 4px solid rgba(0,100,220,0.2);
+    border-top-color: var(--blue3);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to{-webkit-transform:rotate(360deg);transform:rotate(360deg)} }
+
+  /* ===== INFO BOX ===== */
+  .info-box {
+    background: rgba(0,80,160,0.15);
+    border: 1px solid rgba(0,100,200,0.3);
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+    display: -webkit-flex; display: flex;
+    gap: 8px;
+  }
+  .info-box-icon { font-size: 15px; -webkit-flex-shrink: 0; flex-shrink: 0; }
+  .info-box-text { color: var(--text-light); font-size: 11px; line-height: 1.5; }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ===== MISC ===== */
+  .divider { height: 1px; background: var(--border); margin: 4px 0; }
+  .text-center { text-align: center; }
+  .hidden { display: none !important; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 480px) {
+    #top-bar { height: 56px; padding: 0 12px; }
+    #top-bar .bank-title { font-size: 13px; }
+    #clock { font-size: 14px; }
+    .menu-grid { gap: 10px; padding: 12px; }
+    .menu-card { padding: 14px 10px; }
+    .menu-icon { font-size: 26px; }
+    .menu-label { font-size: 12px; }
+    .numpad-btn { font-size: 18px; padding: 12px 5px; }
+    .amount-value { font-size: 20px; }
+    .pin-btn { width: 64px; height: 64px; font-size: 20px; }
+    .pin-numpad { grid-template-columns: repeat(3, 64px); }
+    .balance-amount-big { font-size: 28px; }
+    .welcome-logo-big { width: 80px; height: 80px; font-size: 36px; }
+  }
+  @media (min-width: 768px) {
+    .menu-grid { grid-template-columns: repeat(3, 1fr); }
+    .welcome-inner { gap: 36px; }
+    .numpad-btn { font-size: 22px; padding: 16px 5px; }
+  }
+</style>
 </head>
 <body>
-  <div id="app"></div>
-
-  <script>
-    (function () {
-      var T = {
-        ru: {
-          appName: 'AZ Terminal',
-          terminalMode: 'Платежный терминал',
-          introLine: 'Выберите язык и начните операцию.',
-          chooseLanguage: 'Выберите язык',
-          chooseLanguageHint: 'Интерфейс терминала доступен на трех языках.',
-          ru: 'Русский',
-          az: 'Azərbaycanca',
-          en: 'English',
-          home: 'Главная',
-          deposit: 'Пополнение',
-          history: 'Чеки',
-          help: 'Помощь',
-          allServices: 'Услуги',
-          allServicesHint: 'Выберите тип оплаты или пополнения.',
-          step: 'Шаг',
-          providerTitle: 'Выберите поставщика',
-          providerHint: 'Выберите нужный раздел для продолжения операции.',
-          enterData: 'Введите данные',
-          amountTitle: 'Введите сумму',
-          cashTitle: 'Внесите наличные',
-          reviewTitle: 'Проверьте платеж',
-          processingTitle: 'Обработка платежа',
-          processingHint: 'Пожалуйста, подождите несколько секунд.',
-          receiptTitle: 'Чек',
-          success: 'Платеж успешно завершен',
-          back: 'Назад',
-          continue: 'Продолжить',
-          cancel: 'Отмена',
-          confirm: 'Подтвердить',
-          print: 'Печать',
-          newOperation: 'Новая операция',
-          clear: 'Очистить',
-          erase: 'Стереть',
-          target: 'Получатель',
-          service: 'Услуга',
-          provider: 'Поставщик',
-          amount: 'Сумма',
-          fee: 'Комиссия',
-          total: 'К оплате',
-          inserted: 'Внесено',
-          remaining: 'Осталось внести',
-          extra: 'Зачислится сверх суммы',
-          credited: 'К зачислению',
-          status: 'Статус',
-          receiptNo: 'Номер чека',
-          date: 'Дата',
-          checkNotice: 'Проверьте реквизиты перед продолжением. После подтверждения операция будет оформлена в чеке.',
-          cashSlot: 'Прием купюр',
-          cashHint: 'Нажимайте номиналы, чтобы имитировать прием купюр терминалом.',
-          minMax: 'Минимум 1 AZN, максимум 500 AZN.',
-          phoneInput: 'Номер телефона: 9 цифр после +994',
-          cardInput: 'Номер карты: 16 цифр',
-          accountInput: 'Лицевой счет или ID: 6-12 цифр',
-          noDataInput: 'Данные получателя не требуются',
-          invalidInput: 'Проверьте введенные данные.',
-          emptyHistory: 'Пока чеков нет.',
-          openReceipt: 'Открыть чек',
-          fullscreen: 'Экран',
-          lang: 'Язык',
-          terminalReady: 'Терминал готов',
-          selectServiceStatus: 'Выбор услуги',
-          checkStatus: 'Проверка данных',
-          paymentStatus: 'Прием оплаты',
-          receiptStatus: 'Чек готов',
-          service_mobile: 'Мобильная связь',
-          service_bank: 'Банковские услуги',
-          service_utilities: 'Коммунальные платежи',
-          service_internet: 'Интернет и ТВ',
-          service_transport: 'Транспорт',
-          service_government: 'Госуслуги и штрафы',
-          service_wallet: 'Электронные кошельки',
-          service_charity: 'Благотворительность',
-          service_mobile_hint: 'Баланс номера, пакеты, связь.',
-          service_bank_hint: 'Пополнение карты, кредит, счет.',
-          service_utilities_hint: 'Свет, газ, вода, ЖКХ.',
-          service_internet_hint: 'Домашний интернет, ТВ, связь.',
-          service_transport_hint: 'Проездные и транспортный баланс.',
-          service_government_hint: 'Сборы, штрафы, документы.',
-          service_wallet_hint: 'Пополнение электронного баланса.',
-          service_charity_hint: 'Демо-пожертвование без комиссии.',
-          p_mobile_balance: 'Пополнение мобильного',
-          p_mobile_bundle: 'Пакет интернета',
-          p_card_topup: 'Пополнение карты',
-          p_credit: 'Оплата кредита',
-          p_account: 'Пополнение счета',
-          p_electric: 'Электроэнергия',
-          p_gas: 'Газ',
-          p_water: 'Вода',
-          p_home_net: 'Домашний интернет',
-          p_tv: 'Телевидение',
-          p_transport_card: 'Транспортная карта',
-          p_fines: 'Штрафы',
-          p_document: 'Документы',
-          p_wallet: 'Кошелек',
-          p_charity: 'Фонд помощи',
-          help1Title: 'Киосковый режим',
-          help1: 'Кнопки крупные, прокрутка легкая, интерфейс работает из одного HTML-файла без загрузки внешних ресурсов.',
-          help2Title: 'Безопасность',
-          help2: 'Номера маскируются в чеке, история операций хранится только на этом устройстве.',
-          help3Title: 'Сценарий',
-          help3: 'Выберите услугу, введите номер или счет, укажите сумму, внесите купюры и получите чек.'
-        },
-        az: {
-          appName: 'AZ Terminal',
-          terminalMode: 'Ödəniş terminalı',
-          introLine: 'Dili seçin və əməliyyata başlayın.',
-          chooseLanguage: 'Dili seçin',
-          chooseLanguageHint: 'Terminal interfeysi üç dildə işləyir.',
-          ru: 'Русский',
-          az: 'Azərbaycanca',
-          en: 'English',
-          home: 'Əsas',
-          deposit: 'Mədaxil',
-          history: 'Qəbzlər',
-          help: 'Yardım',
-          allServices: 'Xidmətlər',
-          allServicesHint: 'Ödəniş və ya mədaxil növünü seçin.',
-          step: 'Addım',
-          providerTitle: 'Təchizatçını seçin',
-          providerHint: 'Əməliyyatı davam etdirmək üçün bölməni seçin.',
-          enterData: 'Məlumatı daxil edin',
-          amountTitle: 'Məbləği daxil edin',
-          cashTitle: 'Nağd pulu daxil edin',
-          reviewTitle: 'Ödənişi yoxlayın',
-          processingTitle: 'Ödəniş emal olunur',
-          processingHint: 'Zəhmət olmasa bir neçə saniyə gözləyin.',
-          receiptTitle: 'Qəbz',
-          success: 'Ödəniş uğurla tamamlandı',
-          back: 'Geri',
-          continue: 'Davam et',
-          cancel: 'Ləğv et',
-          confirm: 'Təsdiq et',
-          print: 'Çap et',
-          newOperation: 'Yeni əməliyyat',
-          clear: 'Təmizlə',
-          erase: 'Sil',
-          target: 'Alıcı',
-          service: 'Xidmət',
-          provider: 'Təchizatçı',
-          amount: 'Məbləğ',
-          fee: 'Komissiya',
-          total: 'Ödəniləcək',
-          inserted: 'Daxil edilib',
-          remaining: 'Qalıq məbləğ',
-          extra: 'Artıq məbləğ hesaba düşəcək',
-          credited: 'Hesaba düşəcək',
-          status: 'Status',
-          receiptNo: 'Qəbz nömrəsi',
-          date: 'Tarix',
-          checkNotice: 'Davam etməzdən əvvəl rekvizitləri yoxlayın. Təsdiqdən sonra əməliyyat qəbzdə göstəriləcək.',
-          cashSlot: 'Pul qəbulu',
-          cashHint: 'Terminalda kupür qəbulunu imitasiya etmək üçün nominallara toxunun.',
-          minMax: 'Minimum 1 AZN, maksimum 500 AZN.',
-          phoneInput: 'Telefon nömrəsi: +994-dən sonra 9 rəqəm',
-          cardInput: 'Kart nömrəsi: 16 rəqəm',
-          accountInput: 'Şəxsi hesab və ya ID: 6-12 rəqəm',
-          noDataInput: 'Alıcı məlumatı tələb olunmur',
-          invalidInput: 'Daxil edilən məlumatı yoxlayın.',
-          emptyHistory: 'Hələ qəbz yoxdur.',
-          openReceipt: 'Qəbzi aç',
-          fullscreen: 'Ekran',
-          lang: 'Dil',
-          service_mobile: 'Mobil rabitə',
-          service_bank: 'Bank xidmətləri',
-          service_utilities: 'Kommunal ödənişlər',
-          service_internet: 'İnternet və TV',
-          service_transport: 'Nəqliyyat',
-          service_government: 'Dövlət xidmətləri',
-          service_wallet: 'Elektron pul kisələri',
-          service_charity: 'Xeyriyyə',
-          service_mobile_hint: 'Balans, paketlər, rabitə.',
-          service_bank_hint: 'Kart, kredit və hesab mədaxili.',
-          service_utilities_hint: 'İşıq, qaz, su, mənzil.',
-          service_internet_hint: 'Ev interneti, TV, rabitə.',
-          service_transport_hint: 'Gediş kartı və balans.',
-          service_government_hint: 'Rüsumlar, cərimələr, sənədlər.',
-          service_wallet_hint: 'Elektron balansın artırılması.',
-          terminalReady: 'Terminal hazırdır',
-          selectServiceStatus: 'Xidmət seçimi',
-          checkStatus: 'Məlumat yoxlanılır',
-          paymentStatus: 'Ödəniş qəbulu',
-          receiptStatus: 'Qəbz hazırdır',
-          service_charity_hint: 'Komissiyasız ianə.',
-          p_mobile_balance: 'Mobil balans',
-          p_mobile_bundle: 'İnternet paketi',
-          p_card_topup: 'Karta mədaxil',
-          p_credit: 'Kredit ödənişi',
-          p_account: 'Hesaba mədaxil',
-          p_electric: 'Elektrik enerjisi',
-          p_gas: 'Qaz',
-          p_water: 'Su',
-          p_home_net: 'Ev interneti',
-          p_tv: 'Televiziya',
-          p_transport_card: 'Nəqliyyat kartı',
-          p_fines: 'Cərimələr',
-          p_document: 'Sənədlər',
-          p_wallet: 'Pul kisəsi',
-          p_charity: 'Yardım fondu',
-          help1Title: 'Kiosk rejimi',
-          help1: 'Düymələr böyükdür, sürüşdürmə yüngüldür, interfeys xarici resurs yükləmədən bir HTML faylından işləyir.',
-          help2Title: 'Təhlükəsizlik',
-          help2: 'Nömrələr qəbzdə maskalanır, əməliyyat tarixçəsi yalnız bu cihazda saxlanılır.',
-          help3Title: 'Ssenari',
-          help3: 'Xidməti seçin, nömrə və ya hesabı daxil edin, məbləği yazın, kupürləri əlavə edin və qəbz alın.'
-        },
-        en: {
-          appName: 'AZ Terminal',
-          terminalMode: 'Payment terminal',
-          introLine: 'Choose a language and start an operation.',
-          chooseLanguage: 'Choose language',
-          chooseLanguageHint: 'The terminal interface is available in three languages.',
-          ru: 'Русский',
-          az: 'Azərbaycanca',
-          en: 'English',
-          home: 'Home',
-          deposit: 'Deposit',
-          history: 'Receipts',
-          help: 'Help',
-          allServices: 'Services',
-          allServicesHint: 'Choose a payment or cash-in category.',
-          step: 'Step',
-          providerTitle: 'Choose provider',
-          providerHint: 'Choose a section to continue the operation.',
-          enterData: 'Enter details',
-          amountTitle: 'Enter amount',
-          cashTitle: 'Insert cash',
-          reviewTitle: 'Review payment',
-          processingTitle: 'Processing payment',
-          processingHint: 'Please wait a few seconds.',
-          receiptTitle: 'Receipt',
-          success: 'Payment completed successfully',
-          back: 'Back',
-          continue: 'Continue',
-          cancel: 'Cancel',
-          confirm: 'Confirm',
-          print: 'Print',
-          newOperation: 'New operation',
-          clear: 'Clear',
-          erase: 'Delete',
-          target: 'Recipient',
-          service: 'Service',
-          provider: 'Provider',
-          amount: 'Amount',
-          fee: 'Fee',
-          total: 'Total due',
-          inserted: 'Inserted',
-          remaining: 'Remaining',
-          extra: 'Extra will be credited',
-          credited: 'To be credited',
-          status: 'Status',
-          receiptNo: 'Receipt number',
-          date: 'Date',
-          checkNotice: 'Check the payment details before continuing. After confirmation the operation will appear on the receipt.',
-          cashSlot: 'Cash acceptor',
-          cashHint: 'Tap banknote values to simulate the terminal accepting cash.',
-          minMax: 'Minimum 1 AZN, maximum 500 AZN.',
-          phoneInput: 'Phone number: 9 digits after +994',
-          cardInput: 'Card number: 16 digits',
-          accountInput: 'Account or ID: 6-12 digits',
-          noDataInput: 'No recipient data required',
-          invalidInput: 'Please check entered details.',
-          emptyHistory: 'No receipts yet.',
-          openReceipt: 'Open receipt',
-          fullscreen: 'Screen',
-          lang: 'Language',
-          terminalReady: 'Terminal ready',
-          selectServiceStatus: 'Service selection',
-          checkStatus: 'Data check',
-          paymentStatus: 'Payment intake',
-          receiptStatus: 'Receipt ready',
-          service_mobile: 'Mobile services',
-          service_bank: 'Bank services',
-          service_utilities: 'Utilities',
-          service_internet: 'Internet and TV',
-          service_transport: 'Transport',
-          service_government: 'Government and fines',
-          service_wallet: 'E-wallets',
-          service_charity: 'Charity',
-          service_mobile_hint: 'Balance, bundles, mobile service.',
-          service_bank_hint: 'Card top-up, credit, account.',
-          service_utilities_hint: 'Power, gas, water, housing.',
-          service_internet_hint: 'Home internet, TV, connectivity.',
-          service_transport_hint: 'Transit cards and balance.',
-          service_government_hint: 'Fees, fines, documents.',
-          service_wallet_hint: 'Add funds to an e-wallet.',
-          service_charity_hint: 'Donation with no fee.',
-          p_mobile_balance: 'Mobile top-up',
-          p_mobile_bundle: 'Internet bundle',
-          p_card_topup: 'Card top-up',
-          p_credit: 'Credit payment',
-          p_account: 'Account deposit',
-          p_electric: 'Electricity',
-          p_gas: 'Gas',
-          p_water: 'Water',
-          p_home_net: 'Home internet',
-          p_tv: 'Television',
-          p_transport_card: 'Transport card',
-          p_fines: 'Fines',
-          p_document: 'Documents',
-          p_wallet: 'Wallet',
-          p_charity: 'Relief fund',
-          help1Title: 'Kiosk mode',
-          help1: 'Buttons are large, scrolling is light, and the interface runs from one HTML file without loading external resources.',
-          help2Title: 'Safety',
-          help2: 'Numbers are masked on receipts and operation history is stored only on this device.',
-          help3Title: 'Flow',
-          help3: 'Choose a service, enter a number or account, set the amount, insert banknotes, and get a receipt.'
-        }
-      };
-
-      var categories = [
-        { id: 'mobile', code: 'SIM', type: 'phone', label: 'service_mobile', hint: 'service_mobile_hint', providers: [
-          { id: 'mobile-balance', code: 'MB', label: 'p_mobile_balance' },
-          { id: 'mobile-bundle', code: 'NET', label: 'p_mobile_bundle' }
-        ] },
-        { id: 'bank', code: 'KART', type: 'card', label: 'service_bank', hint: 'service_bank_hint', providers: [
-          { id: 'card-topup', code: 'AZN', label: 'p_card_topup' },
-          { id: 'credit', code: 'CR', label: 'p_credit', type: 'account' },
-          { id: 'account', code: 'ACC', label: 'p_account', type: 'account' }
-        ] },
-        { id: 'utilities', code: 'KOM', type: 'account', label: 'service_utilities', hint: 'service_utilities_hint', providers: [
-          { id: 'electric', code: 'EL', label: 'p_electric' },
-          { id: 'gas', code: 'GAS', label: 'p_gas' },
-          { id: 'water', code: 'SU', label: 'p_water' }
-        ] },
-        { id: 'internet', code: 'TV', type: 'account', label: 'service_internet', hint: 'service_internet_hint', providers: [
-          { id: 'home-net', code: 'NET', label: 'p_home_net' },
-          { id: 'tv', code: 'TV', label: 'p_tv' }
-        ] },
-        { id: 'transport', code: 'BUS', type: 'account', label: 'service_transport', hint: 'service_transport_hint', providers: [
-          { id: 'transport-card', code: 'BUS', label: 'p_transport_card' }
-        ] },
-        { id: 'government', code: 'E-GOV', type: 'account', label: 'service_government', hint: 'service_government_hint', providers: [
-          { id: 'fines', code: 'FINE', label: 'p_fines' },
-          { id: 'document', code: 'DOC', label: 'p_document' }
-        ] },
-        { id: 'wallet', code: 'WAL', type: 'phone', label: 'service_wallet', hint: 'service_wallet_hint', providers: [
-          { id: 'wallet', code: 'WAL', label: 'p_wallet' }
-        ] },
-        { id: 'charity', code: 'HELP', type: 'none', label: 'service_charity', hint: 'service_charity_hint', providers: [
-          { id: 'charity', code: 'HELP', label: 'p_charity', noFee: true, type: 'none' }
-        ] }
-      ];
-
-      var state = {
-        lang: 'ru',
-        screen: 'language',
-        categoryId: '',
-        providerId: '',
-        target: '',
-        amount: '',
-        cash: 0,
-        currentReceipt: null,
-        history: loadHistory(),
-        navStack: [],
-        skipNextPop: false,
-        browserHistoryReady: false,
-        processing: false
-      };
-
-      var app = document.getElementById('app');
-      var clockTimer = null;
-
-      function tr(key) {
-        return (T[state.lang] && T[state.lang][key]) || T.ru[key] || key;
-      }
-
-      function esc(value) {
-        return String(value == null ? '' : value)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;');
-      }
-
-      function money(value) {
-        var number = Number(value || 0);
-        return number.toFixed(2).replace('.00', '') + ' AZN';
-      }
-
-      function findCategory(id) {
-        for (var i = 0; i < categories.length; i += 1) {
-          if (categories[i].id === id) return categories[i];
-        }
-        return null;
-      }
-
-      function findProvider(cat, id) {
-        if (!cat) return null;
-        for (var i = 0; i < cat.providers.length; i += 1) {
-          if (cat.providers[i].id === id) return cat.providers[i];
-        }
-        return null;
-      }
-
-      function currentCategory() {
-        return findCategory(state.categoryId);
-      }
-
-      function currentProvider() {
-        return findProvider(currentCategory(), state.providerId);
-      }
-
-      function inputType() {
-        var provider = currentProvider();
-        return (provider && provider.type) || (currentCategory() && currentCategory().type) || 'account';
-      }
-
-      function providerName(provider) {
-        return provider ? tr(provider.label) : '';
-      }
-
-      function categoryName(category) {
-        return category ? tr(category.label) : '';
-      }
-
-      function activeMain() {
-        if (state.screen === 'history' || state.screen === 'receiptHistory') return 'history';
-        if (state.screen === 'help') return 'help';
-        return 'home';
-      }
-
-      function snapshotState() {
-        return {
-          screen: state.screen,
-          categoryId: state.categoryId,
-          providerId: state.providerId,
-          target: state.target,
-          amount: state.amount,
-          cash: state.cash,
-          currentReceipt: state.currentReceipt
-        };
-      }
-
-      function restoreSnapshot(snapshot) {
-        if (!snapshot) return;
-        state.screen = snapshot.screen || 'home';
-        state.categoryId = snapshot.categoryId || '';
-        state.providerId = snapshot.providerId || '';
-        state.target = snapshot.target || '';
-        state.amount = snapshot.amount || '';
-        state.cash = Number(snapshot.cash || 0);
-        state.currentReceipt = snapshot.currentReceipt || null;
-        state.processing = false;
-      }
-
-      function canGoBack() {
-        return state.navStack.length > 0 && state.screen !== 'processing';
-      }
-
-      function showBackButton() {
-        return canGoBack() && state.screen !== 'home' && state.screen !== 'language';
-      }
-
-      function pushNavSnapshot() {
-        state.navStack.push(snapshotState());
-        if (state.navStack.length > 40) {
-          state.navStack.shift();
-        }
-      }
-
-      function pushBrowserStep() {
-        if (!state.browserHistoryReady || !window.history || !window.history.pushState) return;
-        try {
-          window.history.pushState({ azTerminal: true }, document.title, window.location.href);
-        } catch (e) {}
-      }
-
-      function replaceBrowserStep() {
-        if (!window.history || !window.history.replaceState) return;
-        try {
-          window.history.replaceState({ azTerminal: true }, document.title, window.location.href);
-        } catch (e) {}
-      }
-
-      function goTo(screen) {
-        if (state.screen !== screen) {
-          pushNavSnapshot();
-          state.screen = screen;
-          pushBrowserStep();
-        }
-        render();
-      }
-
-      function hardGoHome() {
-        resetFlow();
-        state.navStack = [];
-        state.processing = false;
-        state.screen = 'home';
-        replaceBrowserStep();
-        render();
-      }
-
-      function goBack(syncBrowser) {
-        var snapshot;
-        if (!canGoBack()) return false;
-        snapshot = state.navStack.pop();
-        restoreSnapshot(snapshot);
-        if (syncBrowser && state.browserHistoryReady && window.history && window.history.back) {
-          state.skipNextPop = true;
-          try {
-            window.history.back();
-          } catch (e) {
-            state.skipNextPop = false;
-          }
-        }
-        render();
-        return true;
-      }
-
-      function initBrowserNavigation() {
-        if (!window.history || !window.history.pushState || !window.history.replaceState) {
-          state.browserHistoryReady = false;
-          return;
-        }
-        replaceBrowserStep();
-        state.browserHistoryReady = true;
-        window.onpopstate = function () {
-          if (state.skipNextPop) {
-            state.skipNextPop = false;
-            return;
-          }
-          if (!goBack(false) && state.screen !== 'home' && state.screen !== 'language') {
-            hardGoHome();
-          }
-        };
-      }
-
-      function updateClock() {
-        var node = document.getElementById('clock');
-        if (!node) return;
-        var now = new Date();
-        var dd = pad(now.getDate());
-        var mm = pad(now.getMonth() + 1);
-        var yyyy = now.getFullYear();
-        var hh = pad(now.getHours());
-        var min = pad(now.getMinutes());
-        node.innerHTML = dd + '.' + mm + '.' + yyyy + ' &nbsp; ' + hh + ':' + min;
-      }
-
-      function supportsFullscreen() {
-        var doc = document.documentElement;
-        return !!(doc.requestFullscreen || doc.webkitRequestFullscreen || doc.mozRequestFullScreen || doc.msRequestFullscreen);
-      }
-
-      function pad(value) {
-        return value < 10 ? '0' + value : String(value);
-      }
-
-      function renderTopbar() {
-        var screenButton = supportsFullscreen() ? '<button class="top-action" data-action="fullscreen">' + esc(tr('fullscreen')) + '</button>' : '';
-        return [
-          '<div class="topbar">',
-            '<div class="brand">',
-              '<div class="brand-mark">AZ</div>',
-              '<div>',
-                '<p class="brand-title">' + esc(tr('appName')) + '</p>',
-                '<div class="brand-subtitle">' + esc(tr('terminalMode')) + '</div>',
-              '</div>',
-            '</div>',
-            '<div id="clock" class="clock"></div>',
-            '<div class="langbar">',
-              langButton('az', 'AZ'),
-              langButton('ru', 'RU'),
-              langButton('en', 'EN'),
-              screenButton,
-            '</div>',
-          '</div>'
-        ].join('');
-      }
-
-      function langButton(lang, text) {
-        var active = state.lang === lang ? ' active' : '';
-        return '<button class="' + active + '" data-action="set-lang" data-lang="' + lang + '">' + esc(text) + '</button>';
-      }
-
-      function renderSide() {
-        var active = activeMain();
-        return [
-          '<nav class="side" aria-label="' + esc(tr('home')) + '">',
-            sideButton('home', tr('home'), 'MAIN', active === 'home'),
-            sideButton('history', tr('history'), 'CHK', active === 'history'),
-            sideButton('help', tr('help'), 'INFO', active === 'help'),
-          '</nav>'
-        ].join('');
-      }
-
-      function sideButton(action, label, code, isActive) {
-        return '<button class="' + (isActive ? 'active' : '') + '" data-action="' + action + '"><span>' + esc(label) + '</span><span class="side-code">' + esc(code) + '</span></button>';
-      }
-
-      function renderFrame(content) {
-        return '<div class="kiosk"><div class="shell">' + renderTopbar() + '<div class="main">' + renderSide() + '<div class="terminal-stage"><main class="content">' + content + '</main>' + renderCornerBack() + '</div></div></div></div>';
-      }
-
-      function renderCornerBack() {
-        if (!showBackButton()) return '';
-        return '<button class="corner-back" data-action="go-back"><span>&larr;</span> ' + esc(tr('back')) + '</button>';
-      }
-
-      function renderLanguage() {
-        return [
-          '<div class="kiosk"><div class="shell">',
-            renderTopbar(),
-            '<section class="language-screen">',
-              '<div class="hero-panel">',
-                '<h1 class="hero-title">' + esc(tr('chooseLanguage')) + '</h1>',
-                '<p class="hero-note">' + esc(tr('chooseLanguageHint')) + '</p>',
-                '<div class="language-grid" style="margin-top:18px">',
-                  '<button data-action="start-lang" data-lang="az">' + esc(tr('az')) + '<br><span class="small-muted" style="color:rgba(255,255,255,.78)">AZ</span></button>',
-                  '<button data-action="start-lang" data-lang="ru">' + esc(tr('ru')) + '<br><span class="small-muted" style="color:rgba(255,255,255,.78)">RU</span></button>',
-                  '<button data-action="start-lang" data-lang="en">' + esc(tr('en')) + '<br><span class="small-muted" style="color:rgba(255,255,255,.78)">EN</span></button>',
-                '</div>',
-                '<div class="notice good" style="margin-top:18px">' + esc(tr('terminalReady')) + '</div>',
-              '</div>',
-            '</section>',
-          '</div></div>'
-        ].join('');
-      }
-
-      function renderHeader(title, hint, stepText) {
-        return [
-          '<div class="screen-head">',
-            '<div>',
-              '<h1 class="screen-title">' + esc(title) + '</h1>',
-              hint ? '<p class="screen-kicker">' + esc(hint) + '</p>' : '',
-            '</div>',
-            stepText ? '<div class="status-pill">' + esc(stepText) + '</div>' : '',
-          '</div>'
-        ].join('');
-      }
-
-      function renderHome() {
-        var tiles = [];
-        for (var i = 0; i < categories.length; i += 1) {
-          var cat = categories[i];
-          tiles.push(
-            '<button class="tile" data-action="select-category" data-category="' + esc(cat.id) + '">' +
-              '<span class="tile-code">' + esc(cat.code) + '</span>' +
-              '<span><h3>' + esc(tr(cat.label)) + '</h3><p>' + esc(tr(cat.hint)) + '</p></span>' +
-            '</button>'
-          );
-        }
-        return renderFrame(
-          renderHeader(tr('allServices'), tr('allServicesHint'), tr('selectServiceStatus')) +
-          '<div class="notice good">' + esc(tr('terminalReady')) + '</div>' +
-          '<div class="tiles">' + tiles.join('') + '</div>'
-        );
-      }
-
-      function renderProviders() {
-        var cat = currentCategory();
-        if (!cat) return renderHome();
-        var providers = [];
-        for (var i = 0; i < cat.providers.length; i += 1) {
-          var p = cat.providers[i];
-          providers.push(
-            '<button class="provider" data-action="select-provider" data-provider="' + esc(p.id) + '">' +
-              '<span class="provider-logo">' + esc(p.code) + '</span>' +
-              '<span><h3>' + esc(providerName(p)) + '</h3><p>' + esc(categoryName(cat)) + '</p></span>' +
-            '</button>'
-          );
-        }
-        return renderFrame(
-          renderHeader(tr('providerTitle'), tr('providerHint'), tr('step') + ' 1/5') +
-          '<div class="provider-list">' + providers.join('') + '</div>'
-        );
-      }
-
-      function renderInput() {
-        var type = inputType();
-        if (type === 'none') {
-          state.target = '';
-          state.screen = 'amount';
-          return renderAmount();
-        }
-        var label = type === 'phone' ? tr('phoneInput') : (type === 'card' ? tr('cardInput') : tr('accountInput'));
-        var visible = formatTarget(state.target, type, false);
-        var valid = isTargetValid();
-        return renderFrame(
-          renderHeader(tr('enterData'), label, tr('step') + ' 2/5') +
-          '<div class="form-layout">' +
-            '<section class="panel entry-panel">' +
-              summaryMini() +
-              '<div class="display-field ' + (state.target ? '' : 'empty') + '">' + esc(state.target ? visible : label) + '</div>' +
-              (state.target && !valid ? '<div class="notice bad">' + esc(tr('invalidInput')) + '</div>' : '<div class="notice">' + esc(tr('checkNotice')) + '</div>') +
-              renderActions([
-                { action: 'to-amount', label: tr('continue'), cls: 'success', disabled: !valid }
-              ]) +
-            '</section>' +
-            '<aside class="panel keypad-panel">' + renderKeypad() + '</aside>' +
-          '</div>'
-        );
-      }
-
-      function renderAmount() {
-        var amountValue = Number(state.amount || 0);
-        var valid = amountValue >= 1 && amountValue <= 500;
-        var presets = [1, 5, 10, 20, 50, 100, 200, 500];
-        var presetHtml = [];
-        for (var i = 0; i < presets.length; i += 1) {
-          presetHtml.push('<button class="amount-btn" data-action="preset-amount" data-amount="' + presets[i] + '">' + presets[i] + ' AZN</button>');
-        }
-        return renderFrame(
-          renderHeader(tr('amountTitle'), tr('minMax'), tr('step') + ' 3/5') +
-          '<div class="form-layout">' +
-            '<section class="panel entry-panel">' +
-              summaryMini() +
-              '<div class="display-field ' + (state.amount ? '' : 'empty') + '">' + esc(state.amount ? money(amountValue) : tr('amountTitle')) + '</div>' +
-              '<div class="amount-presets">' + presetHtml.join('') + '</div>' +
-              renderCostSummary() +
-              renderActions([
-                { action: 'to-cash', label: tr('continue'), cls: 'success', disabled: !valid }
-              ]) +
-            '</section>' +
-            '<aside class="panel keypad-panel">' + renderKeypad() + '</aside>' +
-          '</div>'
-        );
-      }
-
-      function renderCash() {
-        var total = totalDue();
-        var remaining = Math.max(0, total - state.cash);
-        var done = state.cash >= total;
-        var cashButtons = [1, 5, 10, 20, 50, 100, 200];
-        var buttons = [];
-        for (var i = 0; i < cashButtons.length; i += 1) {
-          buttons.push('<button class="cash-btn" data-action="insert-cash" data-cash="' + cashButtons[i] + '">' + cashButtons[i] + ' AZN</button>');
-        }
-        return renderFrame(
-          renderHeader(tr('cashTitle'), tr('cashHint'), tr('step') + ' 4/5') +
-          '<div class="cashbox">' +
-            '<section class="panel cash-left">' +
-              summaryMini() +
-              renderCostSummary() +
-              '<div class="cash-slot">' + esc(tr('cashSlot')) + '</div>' +
-              '<div class="cash-grid">' + buttons.join('') + '</div>' +
-              '<div class="notice ' + (done ? 'good' : '') + '">' +
-                esc(done ? tr('success') : tr('remaining') + ': ' + money(remaining)) +
-              '</div>' +
-              renderActions([
-                { action: 'reset-cash', label: tr('clear'), cls: 'secondary' },
-                { action: 'to-review', label: tr('continue'), cls: 'success', disabled: !done }
-              ]) +
-            '</section>' +
-            '<aside class="panel cash-right">' +
-              '<div class="summary-card" style="min-height:110px"><span>' + esc(tr('inserted')) + '</span><strong>' + esc(money(state.cash)) + '</strong></div>' +
-              '<div class="summary-card" style="min-height:110px;margin-top:10px"><span>' + esc(tr('remaining')) + '</span><strong>' + esc(money(remaining)) + '</strong></div>' +
-            '</aside>' +
-          '</div>'
-        );
-      }
-
-      function renderReview() {
-        return renderFrame(
-          renderHeader(tr('reviewTitle'), tr('checkNotice'), tr('step') + ' 5/5') +
-          '<section class="panel">' +
-            summaryFull() +
-            renderActions([
-              { action: 'cancel', label: tr('cancel'), cls: 'danger' },
-              { action: 'confirm-payment', label: tr('confirm'), cls: 'success' }
-            ]) +
-          '</section>'
-        );
-      }
-
-      function renderProcessing() {
-        return renderFrame(
-          renderHeader(tr('processingTitle'), tr('processingHint'), tr('paymentStatus')) +
-          '<section class="panel">' +
-            '<div class="progress"><span></span></div>' +
-            summaryFull() +
-          '</section>'
-        );
-      }
-
-      function renderReceipt(receipt, fromHistory) {
-        if (!receipt) receipt = state.currentReceipt;
-        if (!receipt) return renderHome();
-        return renderFrame(
-          renderHeader(tr('receiptTitle'), tr('success'), tr('receiptStatus')) +
-          '<div class="receipt">' +
-            '<h2>' + esc(tr('receiptTitle')) + '</h2>' +
-            receiptRow(tr('receiptNo'), receipt.id) +
-            receiptRow(tr('date'), receipt.date) +
-            receiptRow(tr('service'), receiptServiceName(receipt)) +
-            receiptRow(tr('provider'), receiptProviderName(receipt)) +
-            receiptRow(tr('target'), receipt.target || tr('noDataInput')) +
-            receiptRow(tr('amount'), money(receipt.amount)) +
-            receiptRow(tr('fee'), money(receipt.fee)) +
-            receiptRow(tr('inserted'), money(receipt.inserted)) +
-            receiptRow(tr('credited'), money(receipt.credited)) +
-            receiptRow(tr('status'), tr('success')) +
-            '<div class="receipt-ok">' + esc(tr('success')) + '</div>' +
-          '</div>' +
-          renderActions([
-            { action: 'print', label: tr('print'), cls: 'secondary' },
-            { action: fromHistory ? 'history' : 'home', label: tr('newOperation'), cls: 'success' }
-          ], 'receipt-actions')
-        );
-      }
-
-      function receiptRow(label, value) {
-        return '<div class="receipt-row"><span>' + esc(label) + '</span><strong>' + esc(value) + '</strong></div>';
-      }
-
-      function receiptServiceName(receipt) {
-        var cat = receipt && receipt.categoryId ? findCategory(receipt.categoryId) : null;
-        return cat ? categoryName(cat) : (receipt.service || '');
-      }
-
-      function receiptProviderName(receipt) {
-        var cat = receipt && receipt.categoryId ? findCategory(receipt.categoryId) : null;
-        var provider = receipt && receipt.providerId ? findProvider(cat, receipt.providerId) : null;
-        return provider ? providerName(provider) : (receipt.provider || '');
-      }
-
-      function renderHistory() {
-        var items = [];
-        for (var i = 0; i < state.history.length; i += 1) {
-          var r = state.history[i];
-          items.push(
-            '<button class="history-item" data-action="open-history" data-index="' + i + '">' +
-              '<h3>' + esc(receiptServiceName(r)) + '</h3>' +
-              '<p class="small-muted">' + esc(r.date) + '</p>' +
-              '<div class="summary" style="margin:10px 0 0">' +
-                '<div class="summary-card" style="min-height:62px"><span>' + esc(tr('inserted')) + '</span><strong>' + esc(money(r.inserted)) + '</strong></div>' +
-                '<div class="summary-card" style="min-height:62px"><span>' + esc(tr('status')) + '</span><strong>' + esc(tr('success')) + '</strong></div>' +
-              '</div>' +
-            '</button>'
-          );
-        }
-        return renderFrame(
-          renderHeader(tr('history'), '', tr('terminalReady')) +
-          (items.length ? '<div class="history-list">' + items.join('') + '</div>' : '<div class="notice">' + esc(tr('emptyHistory')) + '</div>')
-        );
-      }
-
-      function renderHelp() {
-        return renderFrame(
-          renderHeader(tr('help'), tr('introLine'), tr('terminalReady')) +
-          '<div class="help-grid">' +
-            helpCard(tr('help1Title'), tr('help1')) +
-            helpCard(tr('help2Title'), tr('help2')) +
-            helpCard(tr('help3Title'), tr('help3')) +
-          '</div>'
-        );
-      }
-
-      function helpCard(title, text) {
-        return '<section class="panel"><h3>' + esc(title) + '</h3><p>' + esc(text) + '</p></section>';
-      }
-
-      function renderActions(actions, extraClass) {
-        var html = [];
-        for (var i = 0; i < actions.length; i += 1) {
-          var a = actions[i];
-          html.push('<button class="action-btn ' + esc(a.cls || '') + '" data-action="' + esc(a.action) + '"' + (a.disabled ? ' disabled' : '') + '>' + esc(a.label) + '</button>');
-        }
-        return '<div class="actions ' + esc(extraClass || '') + '">' + html.join('') + '</div>';
-      }
-
-      function renderKeypad() {
-        var keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'backspace'];
-        var out = [];
-        for (var i = 0; i < keys.length; i += 1) {
-          var key = keys[i];
-          if (key === 'clear') {
-            out.push('<button class="key utility" data-action="key" data-key="clear">' + esc(tr('clear')) + '</button>');
-          } else if (key === 'backspace') {
-            out.push('<button class="key utility" data-action="key" data-key="backspace">' + esc(tr('erase')) + '</button>');
-          } else {
-            out.push('<button class="key" data-action="key" data-key="' + key + '">' + key + '</button>');
-          }
-        }
-        return '<div class="keypad">' + out.join('') + '</div>';
-      }
-
-      function summaryMini() {
-        var cat = currentCategory();
-        var provider = currentProvider();
-        return '<div class="summary">' +
-          '<div class="summary-card"><span>' + esc(tr('service')) + '</span><strong>' + esc(categoryName(cat)) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('provider')) + '</span><strong>' + esc(providerName(provider)) + '</strong></div>' +
-        '</div>';
-      }
-
-      function renderCostSummary() {
-        var amount = Number(state.amount || 0);
-        var fee = calcFee(amount);
-        var total = amount + fee;
-        return '<div class="summary">' +
-          '<div class="summary-card"><span>' + esc(tr('amount')) + '</span><strong>' + esc(money(amount)) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('fee')) + '</span><strong>' + esc(money(fee)) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('total')) + '</span><strong>' + esc(money(total)) + '</strong></div>' +
-        '</div>';
-      }
-
-      function summaryFull() {
-        var amount = Number(state.amount || 0);
-        var fee = calcFee(amount);
-        var total = amount + fee;
-        var credited = Math.max(0, state.cash - fee);
-        var extra = Math.max(0, credited - amount);
-        return '<div class="summary">' +
-          '<div class="summary-card"><span>' + esc(tr('service')) + '</span><strong>' + esc(categoryName(currentCategory())) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('provider')) + '</span><strong>' + esc(providerName(currentProvider())) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('target')) + '</span><strong>' + esc(maskTarget(state.target, inputType()) || tr('noDataInput')) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('amount')) + '</span><strong>' + esc(money(amount)) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('fee')) + '</span><strong>' + esc(money(fee)) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('inserted')) + '</span><strong>' + esc(money(state.cash)) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('credited')) + '</span><strong>' + esc(money(credited)) + '</strong></div>' +
-          '<div class="summary-card"><span>' + esc(tr('extra')) + '</span><strong>' + esc(money(extra)) + '</strong></div>' +
-        '</div>';
-      }
-
-      function calcFee(amount) {
-        var provider = currentProvider();
-        if (!amount || (provider && provider.noFee)) return 0;
-        var fee = amount * 0.01;
-        if (fee < 0.10) fee = 0.10;
-        return Math.round(fee * 100) / 100;
-      }
-
-      function totalDue() {
-        var amount = Number(state.amount || 0);
-        return amount + calcFee(amount);
-      }
-
-      function formatTarget(value, type, masked) {
-        var digits = String(value || '');
-        if (!digits) return '';
-        if (type === 'phone') {
-          var phone = digits;
-          if (masked && phone.length >= 4) {
-            return '+994 ** *** ** ' + phone.slice(-2);
-          }
-          return '+994 ' + phone.replace(/(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
-        }
-        if (type === 'card') {
-          if (masked && digits.length >= 4) {
-            return '**** **** **** ' + digits.slice(-4);
-          }
-          return digits.replace(/(\d{4})(?=\d)/g, '$1 ');
-        }
-        if (masked && digits.length > 4) {
-          return '****' + digits.slice(-4);
-        }
-        return digits;
-      }
-
-      function maskTarget(value, type) {
-        return formatTarget(value, type, true);
-      }
-
-      function isTargetValid() {
-        var type = inputType();
-        var length = state.target.length;
-        if (type === 'none') return true;
-        if (type === 'phone') return length === 9;
-        if (type === 'card') return length === 16;
-        return length >= 6 && length <= 12;
-      }
-
-      function resetFlow() {
-        state.categoryId = '';
-        state.providerId = '';
-        state.target = '';
-        state.amount = '';
-        state.cash = 0;
-        state.currentReceipt = null;
-      }
-
-      function resetAfterProvider() {
-        state.target = '';
-        state.amount = '';
-        state.cash = 0;
-        state.currentReceipt = null;
-      }
-
-      function createReceipt() {
-        var now = new Date();
-        var id = 'AZD-' + now.getFullYear() + pad(now.getMonth() + 1) + pad(now.getDate()) + '-' + Math.floor(100000 + Math.random() * 900000);
-        var amount = Number(state.amount || 0);
-        var fee = calcFee(amount);
-        var receipt = {
-          id: id,
-          date: pad(now.getDate()) + '.' + pad(now.getMonth() + 1) + '.' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()),
-          categoryId: state.categoryId,
-          providerId: state.providerId,
-          service: categoryName(currentCategory()),
-          provider: providerName(currentProvider()),
-          target: maskTarget(state.target, inputType()),
-          amount: amount,
-          fee: fee,
-          inserted: state.cash,
-          credited: Math.max(0, state.cash - fee)
-        };
-        state.currentReceipt = receipt;
-        state.history.unshift(receipt);
-        if (state.history.length > 12) state.history.length = 12;
-        saveHistory();
-      }
-
-      function loadHistory() {
-        try {
-          var raw = window.localStorage && (localStorage.getItem('az-terminal-history') || localStorage.getItem('az-kiosk-history'));
-          return raw ? JSON.parse(raw) : [];
-        } catch (e) {
-          return [];
-        }
-      }
-
-      function saveHistory() {
-        try {
-          if (window.localStorage) localStorage.setItem('az-terminal-history', JSON.stringify(state.history));
-        } catch (e) {}
-      }
-
-      function handleKey(key) {
-        if (state.screen !== 'input' && state.screen !== 'amount') return;
-        var field = state.screen === 'input' ? 'target' : 'amount';
-        var max = state.screen === 'input' ? maxTargetLength() : 3;
-        if (key === 'clear') {
-          state[field] = '';
-        } else if (key === 'backspace') {
-          state[field] = state[field].slice(0, -1);
-        } else if (/^\d$/.test(key) && state[field].length < max) {
-          if (field === 'amount' && state[field] === '' && key === '0') {
-            return;
-          }
-          state[field] += key;
-        }
-        render();
-      }
-
-      function maxTargetLength() {
-        var type = inputType();
-        if (type === 'phone') return 9;
-        if (type === 'card') return 16;
-        return 12;
-      }
-
-      function handleAction(el) {
-        var action = el.getAttribute('data-action');
-        if (!action || el.disabled) return;
-
-        if (action === 'set-lang') {
-          state.lang = el.getAttribute('data-lang') || state.lang;
-        } else if (action === 'go-back') {
-          goBack(true);
-          return;
-        } else if (action === 'start-lang') {
-          state.lang = el.getAttribute('data-lang') || state.lang;
-          goTo('home');
-          return;
-        } else if (action === 'fullscreen') {
-          var doc = document.documentElement;
-          if (doc.requestFullscreen) doc.requestFullscreen();
-          else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-          else if (doc.mozRequestFullScreen) doc.mozRequestFullScreen();
-          else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
-        } else if (action === 'home') {
-          hardGoHome();
-          return;
-        } else if (action === 'history') {
-          goTo('history');
-          return;
-        } else if (action === 'help') {
-          goTo('help');
-          return;
-        } else if (action === 'select-category') {
-          resetFlow();
-          state.categoryId = el.getAttribute('data-category') || '';
-          goTo('providers');
-          return;
-        } else if (action === 'select-provider') {
-          resetAfterProvider();
-          state.providerId = el.getAttribute('data-provider') || '';
-          goTo(inputType() === 'none' ? 'amount' : 'input');
-          return;
-        } else if (action === 'providers') {
-          goTo('providers');
-          return;
-        } else if (action === 'input') {
-          goTo('input');
-          return;
-        } else if (action === 'to-amount') {
-          if (isTargetValid()) {
-            goTo('amount');
-            return;
-          }
-        } else if (action === 'preset-amount') {
-          state.amount = el.getAttribute('data-amount') || '';
-        } else if (action === 'to-cash') {
-          if (Number(state.amount || 0) >= 1) {
-            state.cash = 0;
-            goTo('cash');
-            return;
-          }
-        } else if (action === 'amount') {
-          goTo('amount');
-          return;
-        } else if (action === 'insert-cash') {
-          state.cash += Number(el.getAttribute('data-cash') || 0);
-        } else if (action === 'reset-cash') {
-          state.cash = 0;
-        } else if (action === 'to-review') {
-          if (state.cash >= totalDue()) {
-            goTo('review');
-            return;
-          }
-        } else if (action === 'cash') {
-          goTo('cash');
-          return;
-        } else if (action === 'cancel') {
-          hardGoHome();
-          return;
-        } else if (action === 'confirm-payment') {
-          if (state.processing) return;
-          state.processing = true;
-          state.navStack = [];
-          state.screen = 'processing';
-          replaceBrowserStep();
-          render();
-          window.setTimeout(function () {
-            createReceipt();
-            state.processing = false;
-            state.screen = 'receipt';
-            state.navStack = [];
-            replaceBrowserStep();
-            render();
-          }, 900);
-          return;
-        } else if (action === 'print') {
-          window.print();
-          return;
-        } else if (action === 'open-history') {
-          var index = Number(el.getAttribute('data-index') || 0);
-          state.currentReceipt = state.history[index] || null;
-          goTo('receiptHistory');
-          return;
-        } else if (action === 'key') {
-          handleKey(el.getAttribute('data-key'));
-          return;
-        }
-        render();
-      }
-
-      function render() {
-        document.documentElement.lang = state.lang;
-        if (state.screen === 'language') {
-          app.innerHTML = renderLanguage();
-        } else if (state.screen === 'home') {
-          app.innerHTML = renderHome();
-        } else if (state.screen === 'providers') {
-          app.innerHTML = renderProviders();
-        } else if (state.screen === 'input') {
-          app.innerHTML = renderInput();
-        } else if (state.screen === 'amount') {
-          app.innerHTML = renderAmount();
-        } else if (state.screen === 'cash') {
-          app.innerHTML = renderCash();
-        } else if (state.screen === 'review') {
-          app.innerHTML = renderReview();
-        } else if (state.screen === 'processing') {
-          app.innerHTML = renderProcessing();
-        } else if (state.screen === 'receipt') {
-          app.innerHTML = renderReceipt(state.currentReceipt, false);
-        } else if (state.screen === 'receiptHistory') {
-          app.innerHTML = renderReceipt(state.currentReceipt, true);
-        } else if (state.screen === 'history') {
-          app.innerHTML = renderHistory();
-        } else if (state.screen === 'help') {
-          app.innerHTML = renderHelp();
-        } else {
-          state.screen = 'home';
-          app.innerHTML = renderHome();
-        }
-        updateClock();
-      }
-
-      app.onclick = function (event) {
-        var el = event.target;
-        while (el && el !== app && !el.getAttribute('data-action')) {
-          el = el.parentNode;
-        }
-        if (el && el.getAttribute('data-action')) {
-          handleAction(el);
-        }
-      };
-
-      initBrowserNavigation();
-      render();
-      clockTimer = window.setInterval(updateClock, 30000);
-      if (!clockTimer) updateClock();
-    }());
-  </script>
+
+<div id="terminal-frame">
+
+  <!-- TOP BAR -->
+  <div id="top-bar">
+    <div class="logo-area">
+      <div class="bank-logo">A</div>
+      <div class="bank-name">
+        <div class="bank-title">AZƏRBANK</div>
+        <div class="bank-sub">TERMINAL</div>
+      </div>
+    </div>
+    <div class="center-info">
+      <div class="terminal-id" id="lbl-terminal">Terminal №</div>
+      <div class="terminal-num">AZB-2847-T</div>
+    </div>
+    <div class="right-info">
+      <div id="clock">00:00:00</div>
+      <div id="date-display">01.01.2025</div>
+      <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLang('az')">AZ</button>
+        <button class="lang-btn" onclick="setLang('ru')">RU</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div id="status-bar">
+    <div><span class="status-dot"></span><span class="status-text" id="lbl-connected">Əlaqə aktiv</span></div>
+    <div class="network-info" id="lbl-network">🔒 Şifrəli əlaqə · SSL</div>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div id="main-area">
+
+    <!-- WELCOME SCREEN -->
+    <div class="screen active" id="screen-welcome">
+      <div class="welcome-inner">
+        <div class="welcome-logo-big">A</div>
+        <div class="welcome-title" id="lbl-welcome-title">Xoş Gəlmisiniz!</div>
+        <div class="welcome-subtitle" id="lbl-welcome-sub">Azərbank Ödəniş Terminalı</div>
+        <button class="welcome-touch-hint" onclick="goToPin()" id="lbl-touch">Ekrana toxunun</button>
+        <div class="welcome-secure">
+          <span class="lock-icon">🔐</span>
+          <span id="lbl-secure">Məlumatlarınız tamamilə qorunur</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIN SCREEN -->
+    <div class="screen" id="screen-pin">
+      <div class="pin-inner">
+        <div style="font-size:36px">🔐</div>
+        <div class="pin-title" id="lbl-pin-title">PIN Kodu Daxil Edin</div>
+        <div class="pin-subtitle" id="lbl-pin-sub">Demo üçün: 1234</div>
+        <div class="pin-dots">
+          <div class="pin-dot" id="pd0"></div>
+          <div class="pin-dot" id="pd1"></div>
+          <div class="pin-dot" id="pd2"></div>
+          <div class="pin-dot" id="pd3"></div>
+        </div>
+        <div class="pin-error" id="pin-error-msg"></div>
+        <div class="pin-numpad">
+          <button class="pin-btn" onclick="pinInput('1')">1</button>
+          <button class="pin-btn" onclick="pinInput('2')">2</button>
+          <button class="pin-btn" onclick="pinInput('3')">3</button>
+          <button class="pin-btn" onclick="pinInput('4')">4</button>
+          <button class="pin-btn" onclick="pinInput('5')">5</button>
+          <button class="pin-btn" onclick="pinInput('6')">6</button>
+          <button class="pin-btn" onclick="pinInput('7')">7</button>
+          <button class="pin-btn" onclick="pinInput('8')">8</button>
+          <button class="pin-btn" onclick="pinInput('9')">9</button>
+          <button class="pin-btn clear" onclick="pinClear()" id="lbl-del">⌫</button>
+          <button class="pin-btn" onclick="pinInput('0')">0</button>
+          <button class="pin-btn enter" onclick="pinEnter()" id="lbl-ok">OK</button>
+        </div>
+        <button class="btn-outline" onclick="showScreen('screen-welcome')" id="lbl-back-pin">← Geri</button>
+      </div>
+    </div>
+
+    <!-- MAIN MENU -->
+    <div class="screen" id="screen-menu">
+      <div class="screen-header">
+        <div class="screen-title" id="lbl-menu-title">🏦 Əsas Menyu</div>
+        <button class="end-session-btn" onclick="endSession()" id="lbl-end">Çıxış</button>
+      </div>
+      <div class="menu-grid">
+        <div class="menu-card highlight" onclick="showScreen('screen-deposit')">
+          <div class="menu-icon">💵</div>
+          <div class="menu-label" id="m1">Pul Yatırma</div>
+          <div class="menu-desc" id="m1d">Hesaba pul köçürmə</div>
+        </div>
+        <div class="menu-card" onclick="showScreen('screen-transfer')">
+          <div class="menu-icon">↔️</div>
+          <div class="menu-label" id="m2">Köçürmə</div>
+          <div class="menu-desc" id="m2d">Bank köçürməsi</div>
+        </div>
+        <div class="menu-card" onclick="showScreen('screen-payment')">
+          <div class="menu-icon">💳</div>
+          <div class="menu-label" id="m3">Ödəniş</div>
+          <div class="menu-desc" id="m3d">Xidmət ödənişi</div>
+        </div>
+        <div class="menu-card" onclick="showScreen('screen-mobile')">
+          <div class="menu-icon">📱</div>
+          <div class="menu-label" id="m4">Mobil Ödəniş</div>
+          <div class="menu-desc" id="m4d">Telefon balansı</div>
+        </div>
+        <div class="menu-card" onclick="showScreen('screen-utility')">
+          <div class="menu-icon">🏠</div>
+          <div class="menu-label" id="m5">Kommunal</div>
+          <div class="menu-desc" id="m5d">İşıq, qaz, su</div>
+        </div>
+        <div class="menu-card" onclick="showScreen('screen-balance')">
+          <div class="menu-icon">📊</div>
+          <div class="menu-label" id="m6">Balans</div>
+          <div class="menu-desc" id="m6d">Hesab məlumatı</div>
+        </div>
+        <div class="menu-card" onclick="showScreen('screen-history')">
+          <div class="menu-icon">📋</div>
+          <div class="menu-label" id="m7">Tarixçə</div>
+          <div class="menu-desc" id="m7d">Əməliyyatlar</div>
+        </div>
+        <div class="menu-card" onclick="showQR()">
+          <div class="menu-icon">📷</div>
+          <div class="menu-label" id="m8">QR Ödəniş</div>
+          <div class="menu-desc" id="m8d">QR kod skan</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEPOSIT SCREEN -->
+    <div class="screen" id="screen-deposit">
+      <div class="screen-header">
+        <div class="screen-title" id="lbl-dep-title">💵 Pul Yatırma</div>
+        <button class="back-btn" onclick="showScreen('screen-menu')" id="lbl-back-dep">← Geri</button>
+      </div>
+      <div class="payment-body">
+        <div class="deposit-slots">
+          <div style="color:var(--gold2);font-size:13px;font-weight:700;" id="lbl-insert">Banknotları yerə daxil edin</div>
+          <div class="slot-visual" id="slot-visual"></div>
+          <div class="slot-label" id="lbl-slot">▼ Buraya Daxil Edin ▼</div>
+          <div class="deposit-info" id="lbl-dep-info">Qəbul edilən: ₼1, ₼5, ₼10, ₼20, ₼50, ₼100</div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title" id="lbl-acc-info">Hesab Məlumatı</div>
+          <div class="form-row">
+            <label class="form-label" id="lbl-card-num">Kart Nömrəsi</label>
+            <input class="form-input" id="dep-card" type="tel" inputmode="numeric" maxlength="19" placeholder="XXXX XXXX XXXX XXXX" oninput="formatCard(this)">
+          </div>
+          <div class="form-row">
+            <label class="form-label" id="lbl-amount">Məbləğ (AZN)</label>
+            <div class="amount-display">
+              <span class="amount-label" id="lbl-enter-amount">Məbləği daxil edin:</span>
+              <span class="amount-value" id="dep-amount-display">0.00</span>
+              <span class="amount-currency">₼</span>
+            </div>
+          </div>
+        </div>
+        <div class="numpad-area">
+          <div class="numpad-grid">
+            <button class="numpad-btn" onclick="numPress('dep','1')">1</button>
+            <button class="numpad-btn" onclick="numPress('dep','2')">2</button>
+            <button class="numpad-btn" onclick="numPress('dep','3')">3</button>
+            <button class="numpad-btn" onclick="numPress('dep','4')">4</button>
+            <button class="numpad-btn" onclick="numPress('dep','5')">5</button>
+            <button class="numpad-btn" onclick="numPress('dep','6')">6</button>
+            <button class="numpad-btn" onclick="numPress('dep','7')">7</button>
+            <button class="numpad-btn" onclick="numPress('dep','8')">8</button>
+            <button class="numpad-btn" onclick="numPress('dep','9')">9</button>
+            <button class="numpad-btn clear" onclick="numPress('dep','C')">⌫</button>
+            <button class="numpad-btn" onclick="numPress('dep','0')">0</button>
+            <button class="numpad-btn ok" onclick="doDeposit()" id="lbl-dep-ok">YATIR</button>
+          </div>
+        </div>
+        <div class="info-box">
+          <div class="info-box-icon">ℹ️</div>
+          <div class="info-box-text" id="lbl-dep-note">Komissiya: 0% · Maksimal: ₼10,000 · İşləmə müddəti: ani</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSFER SCREEN -->
+    <div class="screen" id="screen-transfer">
+      <div class="screen-header">
+        <div class="screen-title" id="lbl-tr-title">↔️ Bank Köçürməsi</div>
+        <button class="back-btn" onclick="showScreen('screen-menu')" id="lbl-back-tr">← Geri</button>
+      </div>
+      <div class="payment-body">
+        <div class="form-section">
+          <div class="form-section-title" id="lbl-sender">Göndərən</div>
+          <div class="form-row">
+            <label class="form-label" id="lbl-from-card">Sizin Kart</label>
+            <input class="form-input" id="tr-from" type="tel" inputmode="numeric" maxlength="19" placeholder="XXXX XXXX XXXX XXXX" oninput="formatCard(this)">
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title" id="lbl-receiver">Alan</div>
+          <div class="form-row">
+            <label class="form-label" id="lbl-to-card">Alan Kartı və ya IBAN</label>
+            <input class="form-input" id="tr-to" type="text" placeholder="AZ + 26 rəqəm">
+          </div>
+          <div class="form-row">
+            <label class="form-label" id="lbl-rec-name">Alıcı Adı</label>
+            <input class="form-input" id="tr-name" type="text" placeholder="Ad Soyad">
+          </div>
+        </div>
+        <div class="numpad-area">
+          <div class="amount-display">
+            <span class="amount-label" id="lbl-tr-amount">Məbləğ:</span>
+            <span class="amount-value" id="tr-amount-display">0.00</span>
+            <span class="amount-currency">₼</span>
+          </div>
+          <div class="numpad-grid">
+            <button class="numpad-btn" onclick="numPress('tr','1')">1</button>
+            <button class="numpad-btn" onclick="numPress('tr','2')">2</button>
+            <button class="numpad-btn" onclick="numPress('tr','3')">3</button>
+            <button class="numpad-btn" onclick="numPress('tr','4')">4</button>
+            <button class="numpad-btn" onclick="numPress('tr','5')">5</button>
+            <button class="numpad-btn" onclick="numPress('tr','6')">6</button>
+            <button class="numpad-btn" onclick="numPress('tr','7')">7</button>
+            <button class="numpad-btn" onclick="numPress('tr','8')">8</button>
+            <button class="numpad-btn" onclick="numPress('tr','9')">9</button>
+            <button class="numpad-btn clear" onclick="numPress('tr','C')">⌫</button>
+            <button class="numpad-btn" onclick="numPress('tr','0')">0</button>
+            <button class="numpad-btn ok" onclick="doTransfer()" id="lbl-tr-ok">KÖÇ</button>
+          </div>
+        </div>
+        <div class="info-box">
+          <div class="info-box-icon">ℹ️</div>
+          <div class="info-box-text" id="lbl-tr-note">Azərbank daxili: pulsuz · Digər banklar: 0.5% (min ₼0.50)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT SCREEN -->
+    <div class="screen" id="screen-payment">
+      <div class="screen-header">
+        <div class="screen-title" id="lbl-pay-title">💳 Xidmət Ödənişi</div>
+        <button class="back-btn" onclick="showScreen('screen-menu')" id="lbl-back-pay">← Geri</button>
+      </div>
+      <div class="payment-body">
+        <div class="form-section">
+          <div class="form-section-title" id="lbl-service">Xidmət Seçin</div>
+          <div class="form-row">
+            <label class="form-label" id="lbl-category">Kateqoriya</label>
+            <select class="form-select" id="pay-category" onchange="updatePayService()">
+              <option value="" id="opt0">— Seçin —</option>
+              <option value="internet" id="opt1">🌐 Internet</option>
+              <option value="tv" id="opt2">📺 Kabel TV</option>
+              <option value="phone" id="opt3">📞 Ev Telefonu</option>
+              <option value="insurance" id="opt4">🛡️ Sığorta</option>
+              <option value="tax" id="opt5">🏛️ Vergi</option>
+            </select>
+          </div>
+          <div class="form-row" id="pay-service-row">
+            <label class="form-label" id="lbl-provider">Provayder</label>
+            <select class="form-select" id="pay-service">
+              <option>AzərNet</option>
+              <option>Aztelecom</option>
+              <option>CaspNet</option>
+              <option>SilkNet</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label" id="lbl-subscriber">Abunəçi Nömrəsi / ID</label>
+            <input class="form-input" id="pay-subscriber" type="tel" inputmode="numeric" placeholder="Nömrə daxil edin">
+          </div>
+        </div>
+        <div class="numpad-area">
+          <div class="amount-display">
+            <span class="amount-label" id="lbl-pay-amount">Ödəniş məbləği:</span>
+            <span class="amount-value" id="pay-amount-display">0.00</span>
+            <span class="amount-currency">₼</span>
+          </div>
+          <div class="numpad-grid">
+            <button class="numpad-btn" onclick="numPress('pay','1')">1</button>
+            <button class="numpad-btn" onclick="numPress('pay','2')">2</button>
+            <button class="numpad-btn" onclick="numPress('pay','3')">3</button>
+            <button class="numpad-btn" onclick="numPress('pay','4')">4</button>
+            <button class="numpad-btn" onclick="numPress('pay','5')">5</button>
+            <button class="numpad-btn" onclick="numPress('pay','6')">6</button>
+            <button class="numpad-btn" onclick="numPress('pay','7')">7</button>
+            <button class="numpad-btn" onclick="numPress('pay','8')">8</button>
+            <button class="numpad-btn" onclick="numPress('pay','9')">9</button>
+            <button class="numpad-btn clear" onclick="numPress('pay','C')">⌫</button>
+            <button class="numpad-btn" onclick="numPress('pay','0')">0</button>
+            <button class="numpad-btn ok" onclick="doPayment()" id="lbl-pay-ok">ÖDƏ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOBILE TOPUP SCREEN -->
+    <div class="screen" id="screen-mobile">
+      <div class="screen-header">
+        <div class="screen-title" id="lbl-mob-title">📱 Mobil Balans</div>
+        <button class="back-btn" onclick="showScreen('screen-menu')" id="lbl-back-mob">← Geri</button>
+      </div>
+      <div class="payment-body">
+        <div class="form-section">
+          <div class="form-section-title" id="lbl-operator">Operator Seçin</div>
+          <div class="operator-grid">
+            <div class="operator-btn" id="op-azercell" onclick="selectOp('azercell')">
+              <div class="operator-emoji">🔵</div>
+              <div class="operator-name">Azercell</div>
+            </div>
+            <div class="operator-btn" id="op-bakcell" onclick="selectOp('bakcell')">
+              <div class="operator-emoji">🟠</div>
+              <div class="operator-name">Bakcell</div>
+            </div>
+            <div class="operator-btn" id="op-nar" onclick="selectOp('nar')">
+              <div class="operator-emoji">🔴</div>
+              <div class="operator-name">Nar Mobile</div>
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:12px">
+            <label class="form-label" id="lbl-phone-num">Telefon Nömrəsi</label>
+            <input class="form-input" id="mob-phone" type="tel" inputmode="numeric" maxlength="13" placeholder="+994 5X XXX XX XX">
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title" id="lbl-quick-amount">Sürətli Seçim (AZN)</div>
+          <div class="quick-amounts">
+            <button class="quick-btn" onclick="setQuickAmount('mob',1)">₼1</button>
+            <button class="quick-btn" onclick="setQuickAmount('mob',2)">₼2</button>
+            <button class="quick-btn" onclick="setQuickAmount('mob',5)">₼5</button>
+            <button class="quick-btn" onclick="setQuickAmount('mob',10)">₼10</button>
+            <button class="quick-btn" onclick="setQuickAmount('mob',20)">₼20</button>
+            <button class="quick-btn" onclick="setQuickAmount('mob',50)">₼50</button>
+          </div>
+        </div>
+        <div class="numpad-area">
+          <div class="amount-display">
+            <span class="amount-label" id="lbl-mob-amount">Məbləğ:</span>
+            <span class="amount-value" id="mob-amount-display">0.00</span>
+            <span class="amount-currency">₼</span>
+          </div>
+          <div class="numpad-grid">
+            <button class="numpad-btn" onclick="numPress('mob','1')">1</button>
+            <button class="numpad-btn" onclick="numPress('mob','2')">2</button>
+            <button class="numpad-btn" onclick="numPress('mob','3')">3</button>
+            <button class="numpad-btn" onclick="numPress('mob','4')">4</button>
+            <button class="numpad-btn" onclick="numPress('mob','5')">5</button>
+            <button class="numpad-btn" onclick="numPress('mob','6')">6</button>
+            <button class="numpad-btn" onclick="numPress('mob','7')">7</button>
+            <button class="numpad-btn" onclick="numPress('mob','8')">8</button>
+            <button class="numpad-btn" onclick="numPress('mob','9')">9</button>
+            <button class="numpad-btn clear" onclick="numPress('mob','C')">⌫</button>
+            <button class="numpad-btn" onclick="numPress('mob','0')">0</button>
+            <button class="numpad-btn ok" onclick="doMobile()" id="lbl-mob-ok">ÖDƏ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UTILITY SCREEN -->
+    <div class="screen" id="screen-utility">
+      <div class="screen-header">
+        <div class="screen-title" id="lbl-util-title">🏠 Kommunal Ödənişlər</div>
+        <button class="back-btn" onclick="showScreen('screen-menu')" id="lbl-back-util">← Geri</button>
+      </div>
+      <div class="utility-list" id="utility-list">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
+    <!-- BALANCE SCREEN -->
+    <div class="screen" id="screen-balance">
+      <div class="screen-header">
+        <div class="screen-title" id="lbl-bal-title">📊 Hesab Məlumatı</div>
+        <button class="back-btn" onclick="showScreen('screen-menu')" id="lbl-back-bal">← Geri</button>
+      </div>
+      <div class="payment-body">
+        <div class="balance-card">
+          <div class="balance-card-name" id="lbl-card-holder">Elçin Məmmədov</div>
+          <div class="balance-amount-big" id="bal-amount">1,250.00</div>
+          <div class="balance-currency-big">Azərbaycan Manatı (AZN)</div>
+          <div class="balance-iban">AZ29NABZ00000000137010001944</div>
+        </div>
+        <div class="balance-details">
+          <div class="balance-row">
+            <div class="balance-row-label" id="lbl-avail">Mövcud Balans</div>
+            <div class="balance-row-val positive" id="bal-avail">₼1,250.00</div>
+          </div>
+          <div class="balance-row">
+            <div class="balance-row-label" id="lbl-reserved">Rezerv</div>
+            <div class="balance-row-val" id="bal-reserved">₼0.00</div>
+          </div>
+          <div class="balance-row">
+            <div class="balance-row-label" id="lbl-limit">Kredit Limiti</div>
+            <div class="balance-row-val" id="bal-limit">₼5,000.00</div>
+          </div>
+          <div class="balance-row">
+            <div class="balance-row-label" id="lbl-daily">Günlük Limit</div>
+            <div class="balance-row-val" id="bal-daily">₼3,000.00</div>
+          </div>
+          <div class="balance-row">
+            <div class="balance-row-label" id="lbl-card-status">Kart Statusu</div>
+            <div class="balance-row-val positive" id="bal-status">✓ Aktiv</div>
+          </div>
+          <div class="balance-row">
+            <div class="balance-row-label" id="lbl-expiry">Son İstifadə Tarixi</div>
+            <div class="balance-row-val" id="bal-exp">12/27</div>
+          </div>
+        </div>
+        <div class="info-box">
+          <div class="info-box-icon">💡</div>
+          <div class="info-box-text" id="lbl-bal-note">Balans məlumatı real vaxt rejimindədir. Son yenilənmə: indi</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY SCREEN -->
+    <div class="screen" id="screen-history">
+      <div class="screen-header">
+        <div class="screen-title" id="lbl-hist-title">📋 Əməliyyat Tarixçəsi</div>
+        <button class="back-btn" onclick="showScreen('screen-menu')" id="lbl-back-hist">← Geri</button>
+      </div>
+      <div class="history-list" id="history-list">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
+    <!-- SUCCESS SCREEN -->
+    <div class="screen" id="screen-success">
+      <div class="success-inner">
+        <div class="success-icon">✓</div>
+        <div class="success-title" id="lbl-success-title">Uğurlu!</div>
+        <div class="success-msg" id="lbl-success-msg">Əməliyyatınız uğurla tamamlandı</div>
+        <div class="success-details" id="success-details">
+          <!-- filled by JS -->
+        </div>
+        <div class="receipt-code" id="success-code">#AZB0000000</div>
+        <button class="btn-primary" onclick="showScreen('screen-menu')" id="lbl-back-menu">Ana Menyuya Qayıt</button>
+        <button class="btn-outline" onclick="printReceipt()" id="lbl-print">🖨️ Çek Çap Et</button>
+      </div>
+    </div>
+
+  </div><!-- /main-area -->
+
+  <!-- BOTTOM NAV -->
+  <div id="bottom-nav">
+    <div class="nav-info" id="lbl-bottom-info">© 2025 Azərbank</div>
+    <div class="nav-chips">
+      <div class="nav-chip"><div class="dot"></div><span id="lbl-online">Online</span></div>
+      <div class="nav-chip">🔒 <span id="lbl-ssl">SSL</span></div>
+    </div>
+    <button class="end-session-btn" onclick="endSession()" id="lbl-end2">⏏ Çıxış</button>
+  </div>
+
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+</div>
+
+<script>
+// ===== STATE =====
+var state = {
+  lang: 'az',
+  pinStr: '',
+  pinCorrect: '1234',
+  amounts: { dep: '', tr: '', pay: '', mob: '' },
+  balance: 1250.00,
+  selectedOp: '',
+  history: [
+    { icon:'💳', title:'Azercell balans', date:'08.05.2025 · 11:23', amount:'+10.00', type:'in' },
+    { icon:'🏠', title:'Azərenerji ödənişi', date:'07.05.2025 · 09:15', amount:'-45.60', type:'out' },
+    { icon:'↔️', title:'Köçürmə: Leyla M.', date:'06.05.2025 · 16:42', amount:'-200.00', type:'out' },
+    { icon:'💵', title:'Balans artırma', date:'05.05.2025 · 10:00', amount:'+500.00', type:'in' },
+    { icon:'🌐', title:'AzərNet internet', date:'04.05.2025 · 14:30', amount:'-25.00', type:'out' },
+    { icon:'📱', title:'Bakcell balans', date:'03.05.2025 · 08:55', amount:'-5.00', type:'out' },
+    { icon:'🛡️', title:'Sığorta ödənişi', date:'02.05.2025 · 13:10', amount:'-88.00', type:'out' },
+  ]
+};
+
+// ===== TRANSLATIONS =====
+var T = {
+  az: {
+    'lbl-terminal':'Terminal №', 'lbl-connected':'Əlaqə aktiv', 'lbl-network':'🔒 Şifrəli əlaqə · SSL',
+    'lbl-welcome-title':'Xoş Gəlmisiniz!', 'lbl-welcome-sub':'Azərbank Ödəniş Terminalı',
+    'lbl-touch':'Ekrana toxunun', 'lbl-secure':'Məlumatlarınız tamamilə qorunur',
+    'lbl-pin-title':'PIN Kodu Daxil Edin', 'lbl-pin-sub':'Demo üçün: 1234',
+    'lbl-del':'⌫', 'lbl-ok':'OK', 'lbl-back-pin':'← Geri',
+    'lbl-menu-title':'🏦 Əsas Menyu', 'lbl-end':'Çıxış', 'lbl-end2':'⏏ Çıxış',
+    'm1':'Pul Yatırma','m1d':'Hesaba pul köçürmə',
+    'm2':'Köçürmə','m2d':'Bank köçürməsi',
+    'm3':'Ödəniş','m3d':'Xidmət ödənişi',
+    'm4':'Mobil Ödəniş','m4d':'Telefon balansı',
+    'm5':'Kommunal','m5d':'İşıq, qaz, su',
+    'm6':'Balans','m6d':'Hesab məlumatı',
+    'm7':'Tarixçə','m7d':'Əməliyyatlar',
+    'm8':'QR Ödəniş','m8d':'QR kod skan',
+    'lbl-dep-title':'💵 Pul Yatırma','lbl-back-dep':'← Geri',
+    'lbl-insert':'Banknotları yerə daxil edin','lbl-slot':'▼ Buraya Daxil Edin ▼',
+    'lbl-dep-info':'Qəbul edilən: ₼1, ₼5, ₼10, ₼20, ₼50, ₼100',
+    'lbl-acc-info':'Hesab Məlumatı','lbl-card-num':'Kart Nömrəsi',
+    'lbl-amount':'Məbləğ (AZN)','lbl-enter-amount':'Məbləği daxil edin:',
+    'lbl-dep-ok':'YATIR','lbl-dep-note':'Komissiya: 0% · Maksimal: ₼10,000 · İşləmə müddəti: ani',
+    'lbl-tr-title':'↔️ Bank Köçürməsi','lbl-back-tr':'← Geri',
+    'lbl-sender':'Göndərən','lbl-from-card':'Sizin Kart',
+    'lbl-receiver':'Alan','lbl-to-card':'Alan Kartı və ya IBAN','lbl-rec-name':'Alıcı Adı',
+    'lbl-tr-amount':'Məbləğ:','lbl-tr-ok':'KÖÇ',
+    'lbl-tr-note':'Azərbank daxili: pulsuz · Digər banklar: 0.5% (min ₼0.50)',
+    'lbl-pay-title':'💳 Xidmət Ödənişi','lbl-back-pay':'← Geri',
+    'lbl-service':'Xidmət Seçin','lbl-category':'Kateqoriya','lbl-provider':'Provayder',
+    'lbl-subscriber':'Abunəçi Nömrəsi / ID',
+    'opt0':'— Seçin —','opt1':'🌐 Internet','opt2':'📺 Kabel TV','opt3':'📞 Ev Telefonu','opt4':'🛡️ Sığorta','opt5':'🏛️ Vergi',
+    'lbl-pay-amount':'Ödəniş məbləği:','lbl-pay-ok':'ÖDƏ',
+    'lbl-mob-title':'📱 Mobil Balans','lbl-back-mob':'← Geri',
+    'lbl-operator':'Operator Seçin','lbl-phone-num':'Telefon Nömrəsi',
+    'lbl-quick-amount':'Sürətli Seçim (AZN)',
+    'lbl-mob-amount':'Məbləğ:','lbl-mob-ok':'ÖDƏ',
+    'lbl-util-title':'🏠 Kommunal Ödənişlər','lbl-back-util':'← Geri',
+    'lbl-bal-title':'📊 Hesab Məlumatı','lbl-back-bal':'← Geri',
+    'lbl-card-holder':'Elçin Məmmədov',
+    'lbl-avail':'Mövcud Balans','lbl-reserved':'Rezerv','lbl-limit':'Kredit Limiti',
+    'lbl-daily':'Günlük Limit','lbl-card-status':'Kart Statusu','lbl-expiry':'Son İstifadə Tarixi',
+    'bal-status':'✓ Aktiv',
+    'lbl-bal-note':'Balans məlumatı real vaxt rejimindədir. Son yenilənmə: indi',
+    'lbl-hist-title':'📋 Əməliyyat Tarixçəsi','lbl-back-hist':'← Geri',
+    'lbl-success-title':'Uğurlu!','lbl-success-msg':'Əməliyyatınız uğurla tamamlandı',
+    'lbl-back-menu':'Ana Menyuya Qayıt','lbl-print':'🖨️ Çek Çap Et',
+    'lbl-bottom-info':'© 2025 Azərbank','lbl-online':'Online','lbl-ssl':'SSL',
+    'pin-wrong':'Yanlış PIN. Yenidən cəhd edin.',
+    'util-electricity':'Azərenerji','util-gas':'Azərqaz','util-water':'Su Kanalizasiya',
+    'util-internet':'İnternet','util-phone':'Ev Telefonu','util-cable':'Kabel TV',
+    'success-dep':'Hesaba pul yatırıldı','success-tr':'Köçürmə həyata keçirildi',
+    'success-pay':'Ödəniş tamamlandı','success-mob':'Balans artırıldı',
+    'err-fill':'Zəhmət olmasa bütün sahələri doldurun!',
+    'err-amount':'Məbləğ sıfırdan böyük olmalıdır!',
+    'err-phone':'Düzgün telefon nömrəsi daxil edin!',
+    'err-op':'Operator seçin!',
+    'qr-msg':'QR kodu kameraya göstərin',
+  },
+  ru: {
+    'lbl-terminal':'Терминал №', 'lbl-connected':'Соединение активно', 'lbl-network':'🔒 Защищённое соединение · SSL',
+    'lbl-welcome-title':'Добро Пожаловать!', 'lbl-welcome-sub':'Платёжный терминал Azərbank',
+    'lbl-touch':'Коснитесь экрана', 'lbl-secure':'Ваши данные полностью защищены',
+    'lbl-pin-title':'Введите PIN-код', 'lbl-pin-sub':'Для демо: 1234',
+    'lbl-del':'⌫', 'lbl-ok':'ОК', 'lbl-back-pin':'← Назад',
+    'lbl-menu-title':'🏦 Главное меню', 'lbl-end':'Выход', 'lbl-end2':'⏏ Выход',
+    'm1':'Пополнение счёта','m1d':'Внести деньги',
+    'm2':'Перевод','m2d':'Банковский перевод',
+    'm3':'Оплата','m3d':'Оплата услуг',
+    'm4':'Мобильный','m4d':'Баланс телефона',
+    'm5':'Коммунальные','m5d':'Свет, газ, вода',
+    'm6':'Баланс','m6d':'Сведения о счёте',
+    'm7':'История','m7d':'Операции',
+    'm8':'QR-оплата','m8d':'Сканирование QR',
+    'lbl-dep-title':'💵 Пополнение счёта','lbl-back-dep':'← Назад',
+    'lbl-insert':'Вставьте банкноты в слот','lbl-slot':'▼ Вставьте сюда ▼',
+    'lbl-dep-info':'Принимаются: ₼1, ₼5, ₼10, ₼20, ₼50, ₼100',
+    'lbl-acc-info':'Сведения о счёте','lbl-card-num':'Номер карты',
+    'lbl-amount':'Сумма (AZN)','lbl-enter-amount':'Введите сумму:',
+    'lbl-dep-ok':'ВНЕСТИ','lbl-dep-note':'Комиссия: 0% · Максимум: ₼10,000 · Обработка: мгновенно',
+    'lbl-tr-title':'↔️ Банковский перевод','lbl-back-tr':'← Назад',
+    'lbl-sender':'Отправитель','lbl-from-card':'Ваша карта',
+    'lbl-receiver':'Получатель','lbl-to-card':'Карта или IBAN получателя','lbl-rec-name':'Имя получателя',
+    'lbl-tr-amount':'Сумма:','lbl-tr-ok':'ПЕРЕВОД',
+    'lbl-tr-note':'Внутри Azərbank: бесплатно · Другие банки: 0.5% (мин ₼0.50)',
+    'lbl-pay-title':'💳 Оплата услуг','lbl-back-pay':'← Назад',
+    'lbl-service':'Выберите услугу','lbl-category':'Категория','lbl-provider':'Провайдер',
+    'lbl-subscriber':'Номер абонента / ID',
+    'opt0':'— Выбрать —','opt1':'🌐 Интернет','opt2':'📺 Кабельное ТВ','opt3':'📞 Домашний телефон','opt4':'🛡️ Страхование','opt5':'🏛️ Налог',
+    'lbl-pay-amount':'Сумма оплаты:','lbl-pay-ok':'ОПЛАТИТЬ',
+    'lbl-mob-title':'📱 Мобильный баланс','lbl-back-mob':'← Назад',
+    'lbl-operator':'Выберите оператора','lbl-phone-num':'Номер телефона',
+    'lbl-quick-amount':'Быстрый выбор (AZN)',
+    'lbl-mob-amount':'Сумма:','lbl-mob-ok':'ОПЛАТИТЬ',
+    'lbl-util-title':'🏠 Коммунальные платежи','lbl-back-util':'← Назад',
+    'lbl-bal-title':'📊 Сведения о счёте','lbl-back-bal':'← Назад',
+    'lbl-card-holder':'Эльчин Мамедов',
+    'lbl-avail':'Доступный баланс','lbl-reserved':'Резерв','lbl-limit':'Кредитный лимит',
+    'lbl-daily':'Дневной лимит','lbl-card-status':'Статус карты','lbl-expiry':'Срок действия',
+    'bal-status':'✓ Активна',
+    'lbl-bal-note':'Баланс в режиме реального времени. Последнее обновление: только что',
+    'lbl-hist-title':'📋 История операций','lbl-back-hist':'← Назад',
+    'lbl-success-title':'Успешно!','lbl-success-msg':'Ваша операция выполнена успешно',
+    'lbl-back-menu':'Вернуться в главное меню','lbl-print':'🖨️ Распечатать чек',
+    'lbl-bottom-info':'© 2025 Azərbank','lbl-online':'Online','lbl-ssl':'SSL',
+    'pin-wrong':'Неверный PIN. Попробуйте снова.',
+    'util-electricity':'Азерэнерджи','util-gas':'Азергаз','util-water':'Водоканал',
+    'util-internet':'Интернет','util-phone':'Домашний телефон','util-cable':'Кабельное ТВ',
+    'success-dep':'Счёт пополнен','success-tr':'Перевод выполнен',
+    'success-pay':'Оплата совершена','success-mob':'Баланс пополнен',
+    'err-fill':'Пожалуйста, заполните все поля!',
+    'err-amount':'Сумма должна быть больше нуля!',
+    'err-phone':'Введите корректный номер телефона!',
+    'err-op':'Выберите оператора!',
+    'qr-msg':'Наведите QR-код на камеру',
+  },
+  en: {
+    'lbl-terminal':'Terminal #', 'lbl-connected':'Connection active', 'lbl-network':'🔒 Encrypted connection · SSL',
+    'lbl-welcome-title':'Welcome!', 'lbl-welcome-sub':'Azərbank Payment Terminal',
+    'lbl-touch':'Touch the screen', 'lbl-secure':'Your data is fully protected',
+    'lbl-pin-title':'Enter PIN Code', 'lbl-pin-sub':'For demo: 1234',
+    'lbl-del':'⌫', 'lbl-ok':'OK', 'lbl-back-pin':'← Back',
+    'lbl-menu-title':'🏦 Main Menu', 'lbl-end':'Exit', 'lbl-end2':'⏏ Exit',
+    'm1':'Cash Deposit','m1d':'Add money to account',
+    'm2':'Transfer','m2d':'Bank transfer',
+    'm3':'Payment','m3d':'Service payment',
+    'm4':'Mobile Top-up','m4d':'Phone balance',
+    'm5':'Utilities','m5d':'Electricity, gas, water',
+    'm6':'Balance','m6d':'Account information',
+    'm7':'History','m7d':'Transactions',
+    'm8':'QR Payment','m8d':'Scan QR code',
+    'lbl-dep-title':'💵 Cash Deposit','lbl-back-dep':'← Back',
+    'lbl-insert':'Insert banknotes into slot','lbl-slot':'▼ Insert Here ▼',
+    'lbl-dep-info':'Accepted: ₼1, ₼5, ₼10, ₼20, ₼50, ₼100',
+    'lbl-acc-info':'Account Information','lbl-card-num':'Card Number',
+    'lbl-amount':'Amount (AZN)','lbl-enter-amount':'Enter amount:',
+    'lbl-dep-ok':'DEPOSIT','lbl-dep-note':'Commission: 0% · Maximum: ₼10,000 · Processing: instant',
+    'lbl-tr-title':'↔️ Bank Transfer','lbl-back-tr':'← Back',
+    'lbl-sender':'Sender','lbl-from-card':'Your Card',
+    'lbl-receiver':'Recipient','lbl-to-card':'Recipient Card or IBAN','lbl-rec-name':'Recipient Name',
+    'lbl-tr-amount':'Amount:','lbl-tr-ok':'TRANSFER',
+    'lbl-tr-note':'Within Azərbank: free · Other banks: 0.5% (min ₼0.50)',
+    'lbl-pay-title':'💳 Service Payment','lbl-back-pay':'← Back',
+    'lbl-service':'Select Service','lbl-category':'Category','lbl-provider':'Provider',
+    'lbl-subscriber':'Subscriber Number / ID',
+    'opt0':'— Select —','opt1':'🌐 Internet','opt2':'📺 Cable TV','opt3':'📞 Home Phone','opt4':'🛡️ Insurance','opt5':'🏛️ Tax',
+    'lbl-pay-amount':'Payment amount:','lbl-pay-ok':'PAY',
+    'lbl-mob-title':'📱 Mobile Top-up','lbl-back-mob':'← Back',
+    'lbl-operator':'Select Operator','lbl-phone-num':'Phone Number',
+    'lbl-quick-amount':'Quick Select (AZN)',
+    'lbl-mob-amount':'Amount:','lbl-mob-ok':'PAY',
+    'lbl-util-title':'🏠 Utility Payments','lbl-back-util':'← Back',
+    'lbl-bal-title':'📊 Account Information','lbl-back-bal':'← Back',
+    'lbl-card-holder':'Elchin Mammadov',
+    'lbl-avail':'Available Balance','lbl-reserved':'Reserved','lbl-limit':'Credit Limit',
+    'lbl-daily':'Daily Limit','lbl-card-status':'Card Status','lbl-expiry':'Expiry Date',
+    'bal-status':'✓ Active',
+    'lbl-bal-note':'Balance is real-time. Last updated: just now',
+    'lbl-hist-title':'📋 Transaction History','lbl-back-hist':'← Back',
+    'lbl-success-title':'Success!','lbl-success-msg':'Your transaction was completed successfully',
+    'lbl-back-menu':'Return to Main Menu','lbl-print':'🖨️ Print Receipt',
+    'lbl-bottom-info':'© 2025 Azərbank','lbl-online':'Online','lbl-ssl':'SSL',
+    'pin-wrong':'Wrong PIN. Please try again.',
+    'util-electricity':'Azərenerji','util-gas':'Azərgaz','util-water':'Water Canal',
+    'util-internet':'Internet','util-phone':'Home Phone','util-cable':'Cable TV',
+    'success-dep':'Cash deposited to account','success-tr':'Transfer completed',
+    'success-pay':'Payment completed','success-mob':'Balance topped up',
+    'err-fill':'Please fill in all fields!',
+    'err-amount':'Amount must be greater than zero!',
+    'err-phone':'Enter a valid phone number!',
+    'err-op':'Select an operator!',
+    'qr-msg':'Show QR code to the camera',
+  }
+};
+
+// ===== HISTORY TRANSLATIONS =====
+var historyData = {
+  az: [
+    { icon:'💳', title:'Azercell balans', date:'08.05.2025 · 11:23', amount:'+10.00', type:'in' },
+    { icon:'🏠', title:'Azərenerji ödənişi', date:'07.05.2025 · 09:15', amount:'-45.60', type:'out' },
+    { icon:'↔️', title:'Köçürmə: Leyla M.', date:'06.05.2025 · 16:42', amount:'-200.00', type:'out' },
+    { icon:'💵', title:'Balans artırma', date:'05.05.2025 · 10:00', amount:'+500.00', type:'in' },
+    { icon:'🌐', title:'AzərNet internet', date:'04.05.2025 · 14:30', amount:'-25.00', type:'out' },
+    { icon:'📱', title:'Bakcell balans', date:'03.05.2025 · 08:55', amount:'-5.00', type:'out' },
+    { icon:'🛡️', title:'Sığorta ödənişi', date:'02.05.2025 · 13:10', amount:'-88.00', type:'out' },
+  ],
+  ru: [
+    { icon:'💳', title:'Azercell баланс', date:'08.05.2025 · 11:23', amount:'+10.00', type:'in' },
+    { icon:'🏠', title:'Оплата Азерэнерджи', date:'07.05.2025 · 09:15', amount:'-45.60', type:'out' },
+    { icon:'↔️', title:'Перевод: Лейла М.', date:'06.05.2025 · 16:42', amount:'-200.00', type:'out' },
+    { icon:'💵', title:'Пополнение баланса', date:'05.05.2025 · 10:00', amount:'+500.00', type:'in' },
+    { icon:'🌐', title:'AzərNet интернет', date:'04.05.2025 · 14:30', amount:'-25.00', type:'out' },
+    { icon:'📱', title:'Bakcell баланс', date:'03.05.2025 · 08:55', amount:'-5.00', type:'out' },
+    { icon:'🛡️', title:'Страховой платёж', date:'02.05.2025 · 13:10', amount:'-88.00', type:'out' },
+  ],
+  en: [
+    { icon:'💳', title:'Azercell top-up', date:'08.05.2025 · 11:23', amount:'+10.00', type:'in' },
+    { icon:'🏠', title:'Azərenerji payment', date:'07.05.2025 · 09:15', amount:'-45.60', type:'out' },
+    { icon:'↔️', title:'Transfer: Leyla M.', date:'06.05.2025 · 16:42', amount:'-200.00', type:'out' },
+    { icon:'💵', title:'Balance top-up', date:'05.05.2025 · 10:00', amount:'+500.00', type:'in' },
+    { icon:'🌐', title:'AzərNet internet', date:'04.05.2025 · 14:30', amount:'-25.00', type:'out' },
+    { icon:'📱', title:'Bakcell balance', date:'03.05.2025 · 08:55', amount:'-5.00', type:'out' },
+    { icon:'🛡️', title:'Insurance payment', date:'02.05.2025 · 13:10', amount:'-88.00', type:'out' },
+  ]
+};
+
+var utilityData = {
+  az: [
+    { icon:'⚡', name:'Azərenerji', detail:'Elektrik ödənişi', screen:'screen-payment' },
+    { icon:'🔥', name:'Azərgaz', detail:'Qaz ödənişi', screen:'screen-payment' },
+    { icon:'💧', name:'Su Kanalizasiya', detail:'Su ödənişi', screen:'screen-payment' },
+    { icon:'🚮', name:'Abşeron Ekoloji', detail:'Zibil xidməti', screen:'screen-payment' },
+    { icon:'🏛️', name:'ASAN Ödəniş', detail:'Dövlət rüsumları', screen:'screen-payment' },
+  ],
+  ru: [
+    { icon:'⚡', name:'Азерэнерджи', detail:'Оплата электричества', screen:'screen-payment' },
+    { icon:'🔥', name:'Азергаз', detail:'Оплата газа', screen:'screen-payment' },
+    { icon:'💧', name:'Водоканал', detail:'Оплата воды', screen:'screen-payment' },
+    { icon:'🚮', name:'Абшерон Эколоджи', detail:'Вывоз мусора', screen:'screen-payment' },
+    { icon:'🏛️', name:'АСАН Оплата', detail:'Государственные пошлины', screen:'screen-payment' },
+  ],
+  en: [
+    { icon:'⚡', name:'Azərenerji', detail:'Electricity payment', screen:'screen-payment' },
+    { icon:'🔥', name:'Azərgaz', detail:'Gas payment', screen:'screen-payment' },
+    { icon:'💧', name:'Water Canal', detail:'Water payment', screen:'screen-payment' },
+    { icon:'🚮', name:'Absheron Eco', detail:'Waste service', screen:'screen-payment' },
+    { icon:'🏛️', name:'ASAN Payment', detail:'Government fees', screen:'screen-payment' },
+  ]
+};
+
+// ===== LANG =====
+function setLang(lang) {
+  state.lang = lang;
+  document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelector('.lang-btn[onclick="setLang(\''+lang+'\')"]').classList.add('active');
+  applyLang();
+}
+
+function t(key) {
+  return (T[state.lang] && T[state.lang][key]) ? T[state.lang][key] : (T.az[key] || key);
+}
+
+function applyLang() {
+  var keys = Object.keys(T.az);
+  for (var i = 0; i < keys.length; i++) {
+    var el = document.getElementById(keys[i]);
+    if (el) el.textContent = t(keys[i]);
+  }
+  // Update select options
+  var opts = ['opt0','opt1','opt2','opt3','opt4','opt5'];
+  opts.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = t(id);
+  });
+  renderHistory();
+  renderUtilities();
+}
+
+// ===== CLOCK =====
+function updateClock() {
+  var now = new Date();
+  var h = now.getHours(); var m = now.getMinutes(); var s = now.getSeconds();
+  var pad = function(n){ return n < 10 ? '0'+n : ''+n; };
+  var el = document.getElementById('clock');
+  if (el) el.textContent = pad(h)+':'+pad(m)+':'+pad(s);
+  var day = now.getDate(); var mon = now.getMonth()+1; var yr = now.getFullYear();
+  var del = document.getElementById('date-display');
+  if (del) del.textContent = pad(day)+'.'+pad(mon)+'.'+yr;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ===== SCREENS =====
+function showScreen(id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) {
+    screens[i].classList.remove('active');
+  }
+  var target = document.getElementById(id);
+  if (target) target.classList.add('active');
+}
+
+// ===== PIN =====
+function goToPin() { state.pinStr = ''; updatePinDots(); showScreen('screen-pin'); }
+
+function pinInput(d) {
+  if (state.pinStr.length >= 4) return;
+  state.pinStr += d;
+  updatePinDots();
+  if (state.pinStr.length === 4) { setTimeout(pinEnter, 300); }
+}
+
+function pinClear() {
+  state.pinStr = state.pinStr.slice(0, -1);
+  updatePinDots();
+}
+
+function pinEnter() {
+  if (state.pinStr === state.pinCorrect) {
+    showLoading(function(){ showScreen('screen-menu'); state.pinStr = ''; updatePinDots(); });
+  } else {
+    var em = document.getElementById('pin-error-msg');
+    em.textContent = t('pin-wrong');
+    em.classList.add('show');
+    state.pinStr = '';
+    updatePinDots();
+    setTimeout(function(){ em.classList.remove('show'); }, 2000);
+  }
+}
+
+function updatePinDots() {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById('pd'+i);
+    if (dot) {
+      if (i < state.pinStr.length) dot.classList.add('filled');
+      else dot.classList.remove('filled');
+    }
+  }
+}
+
+// ===== LOADING =====
+function showLoading(cb) {
+  var ol = document.getElementById('loading-overlay');
+  ol.classList.add('show');
+  setTimeout(function(){
+    ol.classList.remove('show');
+    if (cb) cb();
+  }, 900 + Math.random() * 400);
+}
+
+// ===== NUMPAD =====
+function numPress(ctx, val) {
+  var cur = state.amounts[ctx] || '';
+  if (val === 'C') {
+    state.amounts[ctx] = cur.slice(0, -1);
+  } else {
+    if (cur.length >= 8) return;
+    state.amounts[ctx] = cur + val;
+  }
+  updateAmountDisplay(ctx);
+}
+
+function updateAmountDisplay(ctx) {
+  var raw = state.amounts[ctx] || '';
+  var num = parseInt(raw || '0', 10) / 100;
+  var formatted = num.toFixed(2);
+  var el = document.getElementById(ctx+'-amount-display');
+  if (el) el.textContent = formatted;
+}
+
+function setQuickAmount(ctx, val) {
+  state.amounts[ctx] = String(val * 100);
+  updateAmountDisplay(ctx);
+}
+
+function getAmount(ctx) {
+  return parseInt(state.amounts[ctx] || '0', 10) / 100;
+}
+
+// ===== CARD FORMAT =====
+function formatCard(input) {
+  var v = input.value.replace(/\D/g,'').slice(0,16);
+  input.value = v.replace(/(.{4})/g,'$1 ').trim();
+}
+
+// ===== OPERATOR SELECT =====
+function selectOp(op) {
+  state.selectedOp = op;
+  document.querySelectorAll('.operator-btn').forEach(function(b){ b.classList.remove('selected'); });
+  var btn = document.getElementById('op-'+op);
+  if (btn) btn.classList.add('selected');
+}
+
+// ===== DO ACTIONS =====
+function doDeposit() {
+  var card = document.getElementById('dep-card').value.replace(/\s/g,'');
+  var amount = getAmount('dep');
+  if (!card || card.length < 16) { alert(t('err-fill')); return; }
+  if (amount <= 0) { alert(t('err-amount')); return; }
+  showLoading(function(){
+    document.getElementById('slot-visual').classList.add('active');
+    setTimeout(function(){ document.getElementById('slot-visual').classList.remove('active'); }, 1500);
+    state.balance += amount;
+    updateBalanceDisplay();
+    showSuccess('dep', amount, card, null);
+    state.amounts.dep = '';
+    updateAmountDisplay('dep');
+    document.getElementById('dep-card').value = '';
+  });
+}
+
+function doTransfer() {
+  var from = document.getElementById('tr-from').value.replace(/\s/g,'');
+  var to = document.getElementById('tr-to').value;
+  var name = document.getElementById('tr-name').value;
+  var amount = getAmount('tr');
+  if (!from || from.length < 16 || !to || !name) { alert(t('err-fill')); return; }
+  if (amount <= 0) { alert(t('err-amount')); return; }
+  if (amount > state.balance) { alert('Balans kifayət etmir! / Недостаточно средств! / Insufficient funds!'); return; }
+  showLoading(function(){
+    state.balance -= amount;
+    updateBalanceDisplay();
+    showSuccess('tr', amount, to, name);
+    state.amounts.tr = '';
+    updateAmountDisplay('tr');
+    document.getElementById('tr-from').value = '';
+    document.getElementById('tr-to').value = '';
+    document.getElementById('tr-name').value = '';
+  });
+}
+
+function doPayment() {
+  var sub = document.getElementById('pay-subscriber').value;
+  var amount = getAmount('pay');
+  if (!sub) { alert(t('err-fill')); return; }
+  if (amount <= 0) { alert(t('err-amount')); return; }
+  if (amount > state.balance) { alert('Balans kifayət etmir! / Недостаточно средств! / Insufficient funds!'); return; }
+  showLoading(function(){
+    state.balance -= amount;
+    updateBalanceDisplay();
+    showSuccess('pay', amount, sub, null);
+    state.amounts.pay = '';
+    updateAmountDisplay('pay');
+    document.getElementById('pay-subscriber').value = '';
+  });
+}
+
+function doMobile() {
+  if (!state.selectedOp) { alert(t('err-op')); return; }
+  var phone = document.getElementById('mob-phone').value;
+  if (!phone || phone.replace(/\D/g,'').length < 9) { alert(t('err-phone')); return; }
+  var amount = getAmount('mob');
+  if (amount <= 0) { alert(t('err-amount')); return; }
+  if (amount > state.balance) { alert('Balans kifayət etmir! / Недостаточно средств! / Insufficient funds!'); return; }
+  showLoading(function(){
+    state.balance -= amount;
+    updateBalanceDisplay();
+    showSuccess('mob', amount, phone, state.selectedOp);
+    state.amounts.mob = '';
+    updateAmountDisplay('mob');
+    document.getElementById('mob-phone').value = '';
+    document.querySelectorAll('.operator-btn').forEach(function(b){ b.classList.remove('selected'); });
+    state.selectedOp = '';
+  });
+}
+
+// ===== SUCCESS =====
+function showSuccess(type, amount, target, extra) {
+  var now = new Date();
+  var pad = function(n){ return n < 10 ? '0'+n : ''+n; };
+  var dateStr = pad(now.getDate())+'.'+pad(now.getMonth()+1)+'.'+now.getFullYear()+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+  var code = '#AZB' + Math.floor(1000000 + Math.random()*9000000);
+  
+  var title = t('success-'+type);
+  var details = '';
+  
+  if (type === 'dep') {
+    details = '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Карта':'Kart / Card') + '</span><span class="success-detail-val">' + target.replace(/(.{4})/g,'$1 ').trim() + '</span></div>';
+    details += '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Сумма':state.lang==='en'?'Amount':'Məbləğ') + '</span><span class="success-detail-val positive">+₼' + amount.toFixed(2) + '</span></div>';
+    details += '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Комиссия':state.lang==='en'?'Commission':'Komissiya') + '</span><span class="success-detail-val">₼0.00</span></div>';
+  } else if (type === 'tr') {
+    details = '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Получатель':state.lang==='en'?'Recipient':'Alıcı') + '</span><span class="success-detail-val">' + (extra||'') + '</span></div>';
+    details += '<div class="success-detail-row"><span class="success-detail-label">IBAN/Kart</span><span class="success-detail-val">' + target + '</span></div>';
+    details += '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Сумма':state.lang==='en'?'Amount':'Məbləğ') + '</span><span class="success-detail-val negative">-₼' + amount.toFixed(2) + '</span></div>';
+  } else if (type === 'pay') {
+    details = '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Абонент':state.lang==='en'?'Subscriber':'Abunəçi') + '</span><span class="success-detail-val">' + target + '</span></div>';
+    details += '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Сумма':state.lang==='en'?'Amount':'Məbləğ') + '</span><span class="success-detail-val negative">-₼' + amount.toFixed(2) + '</span></div>';
+  } else if (type === 'mob') {
+    details = '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Оператор':state.lang==='en'?'Operator':'Operator') + '</span><span class="success-detail-val">' + (extra||'') + '</span></div>';
+    details = details + '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Номер':state.lang==='en'?'Number':'Nömrə') + '</span><span class="success-detail-val">' + target + '</span></div>';
+    details += '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Сумма':state.lang==='en'?'Amount':'Məbləğ') + '</span><span class="success-detail-val negative">-₼' + amount.toFixed(2) + '</span></div>';
+  }
+  details += '<div class="success-detail-row"><span class="success-detail-label">' + (state.lang==='ru'?'Дата/Время':state.lang==='en'?'Date/Time':'Tarix/Vaxt') + '</span><span class="success-detail-val">' + dateStr + '</span></div>';
+  
+  document.getElementById('lbl-success-title').textContent = t('lbl-success-title');
+  document.getElementById('lbl-success-msg').textContent = title;
+  document.getElementById('success-details').innerHTML = details;
+  document.getElementById('success-code').textContent = code;
+  
+  // Add to history
+  historyData.az.unshift({ icon: type==='dep'?'💵':type==='tr'?'↔️':type==='pay'?'💳':'📱', title: title, date: dateStr, amount: (type==='dep'?'+':'-')+'₼'+amount.toFixed(2), type: type==='dep'?'in':'out' });
+  historyData.ru.unshift({ icon: type==='dep'?'💵':type==='tr'?'↔️':type==='pay'?'💳':'📱', title: title, date: dateStr, amount: (type==='dep'?'+':'-')+'₼'+amount.toFixed(2), type: type==='dep'?'in':'out' });
+  historyData.en.unshift({ icon: type==='dep'?'💵':type==='tr'?'↔️':type==='pay'?'💳':'📱', title: title, date: dateStr, amount: (type==='dep'?'+':'-')+'₼'+amount.toFixed(2), type: type==='dep'?'in':'out' });
+  
+  showScreen('screen-success');
+}
+
+// ===== BALANCE =====
+function updateBalanceDisplay() {
+  var fmt = function(n){ return n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); };
+  var el = document.getElementById('bal-amount');
+  if (el) el.textContent = fmt(state.balance);
+  var ea = document.getElementById('bal-avail');
+  if (ea) ea.textContent = '₼'+fmt(state.balance);
+}
+
+// ===== HISTORY RENDER =====
+function renderHistory() {
+  var list = document.getElementById('history-list');
+  if (!list) return;
+  var items = historyData[state.lang] || historyData.az;
+  var html = '';
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    html += '<div class="history-item">';
+    html += '<div class="history-icon">'+item.icon+'</div>';
+    html += '<div class="history-info"><div class="history-title">'+item.title+'</div><div class="history-date">'+item.date+'</div></div>';
+    html += '<div class="history-amount '+item.type+'">'+item.amount+'</div>';
+    html += '</div>';
+  }
+  list.innerHTML = html;
+}
+
+// ===== UTILITY RENDER =====
+function renderUtilities() {
+  var list = document.getElementById('utility-list');
+  if (!list) return;
+  var items = utilityData[state.lang] || utilityData.az;
+  var html = '';
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    html += '<div class="utility-item" onclick="showScreen(\''+item.screen+'\')">';
+    html += '<div class="utility-icon">'+item.icon+'</div>';
+    html += '<div class="utility-info"><div class="utility-name">'+item.name+'</div><div class="utility-detail">'+item.detail+'</div></div>';
+    html += '<div class="utility-arrow">›</div>';
+    html += '</div>';
+  }
+  list.innerHTML = html;
+}
+
+// ===== QR =====
+function showQR() {
+  alert('📷 ' + t('qr-msg'));
+}
+
+// ===== PAY SERVICE =====
+function updatePayService() {
+  var cat = document.getElementById('pay-category').value;
+  var sel = document.getElementById('pay-service');
+  if (!cat) { sel.innerHTML = '<option>—</option>'; return; }
+  var providers = {
+    internet: ['AzərNet','Aztelecom','CaspNet','SilkNet'],
+    tv: ['Caspian TV','TeleMax','AzərTV Kabel','Star TV'],
+    phone: ['Aztelecom','Azərtelekom','Nakhchivan Tel'],
+    insurance: ['ATƏŞGAH','PASHA Sığorta','AzərSigorta','MEGA'],
+    tax: ['DGK','Bakı Şəhər Vergi','ASAN Xidmət','e-Hökumət']
+  };
+  var opts = providers[cat] || [];
+  sel.innerHTML = opts.map(function(p){ return '<option>'+p+'</option>'; }).join('');
+}
+
+// ===== END SESSION =====
+function endSession() {
+  showLoading(function(){
+    state.pinStr = '';
+    state.amounts = { dep: '', tr: '', pay: '', mob: '' };
+    state.selectedOp = '';
+    updateAmountDisplay('dep'); updateAmountDisplay('tr');
+    updateAmountDisplay('pay'); updateAmountDisplay('mob');
+    showScreen('screen-welcome');
+  });
+}
+
+// ===== PRINT =====
+function printReceipt() {
+  window.print && window.print();
+}
+
+// ===== INIT =====
+renderHistory();
+renderUtilities();
+updateBalanceDisplay();
+</script>
 </body>
 </html>
